@@ -129,6 +129,34 @@ export const medicines: Medicine[] = [
     image: 'medicine-2',
     requiresPrescription: false,
     tags: ['top', 'acidity']
+  },
+  {
+    id: 'med9',
+    name: 'Pain Relief Gel',
+    price: 150,
+    category: 'Topical',
+    image: 'medicine-7',
+    requiresPrescription: false,
+    tags: ['pain relief', 'top']
+  },
+  {
+    id: 'med10',
+    name: 'Hand Sanitizer 100ml',
+    price: 80,
+    discount: 10,
+    category: 'Personal Care',
+    image: 'medicine-8',
+    requiresPrescription: false,
+    tags: ['top', 'hygiene']
+  },
+  {
+    id: 'med11',
+    name: 'Sunscreen Lotion SPF 50',
+    price: 450,
+    category: 'Personal Care',
+    image: 'medicine-9',
+    requiresPrescription: false,
+    tags: ['skin care', 'top']
   }
 ];
 

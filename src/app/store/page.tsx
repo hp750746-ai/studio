@@ -7,13 +7,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MedicineCard from '@/components/app/medicine-card';
 import { medicines } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import type { Medicine } from '@/lib/types';
 
 export const metadata = {
   title: 'Online Medicine Store | HealthLinke',
   description: 'Buy medicines online from our trusted pharmacy. Tablets, syrups, ayurvedic, and more.',
 };
 
-const categories: Medicine['category'][] = ['Tablets', 'Syrup', 'Injection', 'Ayurvedic', 'Baby Care', 'Health Devices'];
+const categories: Medicine['category'][] = ['Tablets', 'Syrup', 'Injection', 'Ayurvedic', 'Baby Care', 'Health Devices', 'Topical', 'Personal Care'];
 const prescriptionImage = PlaceHolderImages.find(img => img.id === 'prescription-upload');
 
 export default function StorePage() {

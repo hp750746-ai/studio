@@ -73,6 +73,24 @@
       "imageHint": "health monitor"
     },
     {
+      "id": "medicine-7",
+      "description": "Tube of pain relief gel",
+      "imageUrl": "https://images.unsplash.com/photo-1600608933254-8072175a7432?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwYWluJTIwcmVsaWVmJTIwZ2VsfGVufDB8fHx8MTc3MDQxMzQwNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "pain relief"
+    },
+    {
+      "id": "medicine-8",
+      "description": "Bottle of hand sanitizer",
+      "imageUrl": "https://images.unsplash.com/photo-1584813539164-d621931a74d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxoYW5kJTIwc2FuaXRpemVyfGVufDB8fHx8MTc3MDQxMzQ2Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "hand sanitizer"
+    },
+    {
+      "id": "medicine-9",
+      "description": "Tube of sunscreen lotion",
+      "imageUrl": "https://images.unsplash.com/photo-1520791238611-3c6c406b746d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzdW5zY3JlZW4lMjBsb3Rpb258ZW58MHx8fHwxNzcwNDEzNTEyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "sunscreen lotion"
+    },
+    {
       "id": "lab-1",
       "description": "Blood test tubes in a rack",
       "imageUrl": "https://images.unsplash.com/photo-1542884841-9f546e727bca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxibG9vZCUyMHRlc3R8ZW58MHx8fHwxNzcwMjU3MzgwfDA&ixlib=rb-4.1.0&q=80&w=1080",

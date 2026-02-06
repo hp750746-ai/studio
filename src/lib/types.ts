@@ -14,7 +14,7 @@ export type Medicine = {
   name: string;
   price: number;
   discount?: number;
-  category: 'Tablets' | 'Syrup' | 'Injection' | 'Ayurvedic' | 'Baby Care' | 'Health Devices';
+  category: 'Tablets' | 'Syrup' | 'Injection' | 'Ayurvedic' | 'Baby Care' | 'Health Devices' | 'Topical' | 'Personal Care';
   image: string;
   requiresPrescription: boolean;
   tags: string[];
