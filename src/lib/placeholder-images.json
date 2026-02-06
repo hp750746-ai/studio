@@ -1,3 +1,130 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-1",
+      "description": "A doctor smiling and talking to a patient",
+      "imageUrl": "https://images.unsplash.com/photo-1584516150909-c43483ee7932?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZG9jdG9yJTIwcGF0aWVudHxlbnwwfHx8fDE3NzAzMzM5Nzl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "doctor patient"
+    },
+    {
+      "id": "doctor-1",
+      "description": "Portrait of a friendly male doctor",
+      "imageUrl": "https://images.unsplash.com/photo-1550831107-1553da8c8464?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxkb2N0b3IlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzAzMTYwNzZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "doctor portrait"
+    },
+    {
+      "id": "doctor-2",
+      "description": "Portrait of a confident female doctor",
+      "imageUrl": "https://images.unsplash.com/photo-1612531385446-f7e6d131e1d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxkb2N0b3IlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzAzMTYwNzZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "doctor portrait"
+    },
+    {
+      "id": "doctor-3",
+      "description": "Portrait of a senior male doctor",
+      "imageUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZG9jdG9yJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzcwMzE2MDc2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "doctor portrait"
+    },
+    {
+      "id": "doctor-4",
+      "description": "Portrait of a young female doctor with a stethoscope",
+      "imageUrl": "https://images.unsplash.com/photo-1655313719612-8248b2c4d1e7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxkb2N0b3IlMjBzdGV0aG9zY29wZXxlbnwwfHx8fDE3NzAzNDY2MjR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "doctor stethoscope"
+    },
+    {
+      "id": "doctor-5",
+      "description": "Portrait of a smiling female doctor",
+      "imageUrl": "https://images.unsplash.com/photo-1758691463610-3c2ecf5fb3fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxkb2N0b3IlMjBzbWlsaW5nfGVufDB8fHx8MTc3MDM0NTI3NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "doctor smiling"
+    },
+    {
+      "id": "medicine-1",
+      "description": "Box of tablets",
+      "imageUrl": "https://images.unsplash.com/photo-1630094539356-db820e921e83?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxtZWRpY2luZSUyMHBpbGxzfGVufDB8fHx8MTc3MDM0NjYyNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "medicine pills"
+    },
+    {
+      "id": "medicine-2",
+      "description": "Bottle of syrup",
+      "imageUrl": "https://images.unsplash.com/photo-1700104494865-200e961d942c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxtZWRpY2luZSUyMHN5cnVwfGVufDB8fHx8MTc3MDM0NjYyNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "medicine syrup"
+    },
+    {
+      "id": "medicine-3",
+      "description": "Injection vial and syringe",
+      "imageUrl": "https://images.unsplash.com/photo-1623867822372-3cd497e3b383?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxpbmplY3Rpb24lMjB2aWFsfGVufDB8fHx8MTc3MDM0NjYyNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "injection vial"
+    },
+    {
+      "id": "medicine-4",
+      "description": "Ayurvedic herbs and powders",
+      "imageUrl": "https://images.unsplash.com/photo-1760696473939-88db0835c908?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxheXVydmVkaWMlMjBoZXJic3xlbnwwfHx8fDE3NzAzNDY2MjR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "ayurvedic herbs"
+    },
+    {
+      "id": "medicine-5",
+      "description": "Baby care products",
+      "imageUrl": "https://images.unsplash.com/photo-1484820540004-14229fe36ca4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxiYWJ5JTIwcHJvZHVjdHN8ZW58MHx8fHwxNzcwMzQ2NjI0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "baby products"
+    },
+    {
+      "id": "medicine-6",
+      "description": "Blood pressure monitor and pills",
+      "imageUrl": "https://images.unsplash.com/photo-1630128295920-627fb9aff5a4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxoZWFsdGglMjBtb25pdG9yfGVufDB8fHx8MTc3MDM0NjYyNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "health monitor"
+    },
+    {
+      "id": "lab-1",
+      "description": "Blood test tubes in a rack",
+      "imageUrl": "https://images.unsplash.com/photo-1542884841-9f546e727bca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxibG9vZCUyMHRlc3R8ZW58MHx8fHwxNzcwMjU3MzgwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "blood test"
+    },
+    {
+      "id": "lab-2",
+      "description": "Scientist looking at a sample under a microscope",
+      "imageUrl": "https://images.unsplash.com/photo-1707944746042-e4c81c191812?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxsYWIlMjByZXNlYXJjaHxlbnwwfHx8fDE3NzAzNDYzMTl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "lab research"
+    },
+    {
+      "id": "wellness-1",
+      "description": "Person doing yoga in a serene setting",
+      "imageUrl": "https://images.unsplash.com/photo-1562088287-bde35a1ea917?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx5b2dhJTIwcG9zZXxlbnwwfHx8fDE3NzAyMzgwODV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "yoga pose"
+    },
+    {
+      "id": "wellness-2",
+      "description": "A healthy and colorful salad",
+      "imageUrl": "https://images.unsplash.com/photo-1467453678174-768ec283a940?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxoZWFsdGh5JTIwZm9vZHxlbnwwfHx8fDE3NzAzNDMzMDh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "healthy food"
+    },
+    {
+      "id": "wellness-3",
+      "description": "Pregnant woman holding her belly",
+      "imageUrl": "https://images.unsplash.com/photo-1769483713352-bc9b4d98bc0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwcmVnbmFuY3klMjBjYXJlfGVufDB8fHx8MTc3MDM0NjYyNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "pregnancy care"
+    },
+    {
+      "id": "wellness-4",
+      "description": "A calm and peaceful landscape for mental health",
+      "imageUrl": "https://images.unsplash.com/photo-1671760428190-d95979dcda62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjYWxtJTIwbGFuZHNjYXBlfGVufDB8fHx8MTc3MDMxOTk0NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "calm landscape"
+    },
+    {
+      "id": "wellness-5",
+      "description": "An elderly couple walking hand in hand",
+      "imageUrl": "https://images.unsplash.com/photo-1658632302217-984d432b4d38?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxlbGRlcmx5JTIwY291cGxlfGVufDB8fHx8MTc3MDM0NjYyNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "elderly couple"
+    },
+    {
+      "id": "prescription-upload",
+      "description": "A doctor's prescription note",
+      "imageUrl": "https://images.unsplash.com/photo-1626207887298-da2fc1f50e82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwcmVzY3JpcHRpb24lMjBub3RlfGVufDB8fHx8MTc3MDM0NjYyNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "prescription note"
+    },
+    {
+      "id": "login-hero",
+      "description": "A secure lock icon with a digital background",
+      "imageUrl": "https://images.unsplash.com/photo-1617228679684-890412dc57a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxkaWdpdGFsJTIwc2VjdXJpdHl8ZW58MHx8fHwxNzcwMzQ2NjI1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "digital security"
+    }
+  ]
 }
