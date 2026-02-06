@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { Upload } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -30,9 +31,11 @@ export default function StorePage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0 mt-6">
-              <Button size="lg" variant="default">
-                <Upload className="mr-2 h-5 w-5" />
-                Upload Prescription
+              <Button size="lg" variant="default" asChild>
+                <Link href="/order-medicines">
+                  <Upload className="mr-2 h-5 w-5" />
+                  Upload Prescription
+                </Link>
               </Button>
               <p className="text-sm mt-4 text-muted-foreground">Supports JPG, PNG, and PDF formats.</p>
             </CardContent>

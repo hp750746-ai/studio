@@ -6,7 +6,6 @@ import {
   HeartPulse,
   User,
   Menu,
-  X,
   Stethoscope,
   Pill,
   TestTube,
@@ -27,7 +26,8 @@ import {
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/store', label: 'Medicines', icon: ShoppingCart },
+  { href: '/store', label: 'Shop', icon: ShoppingCart },
+  { href: '/order-medicines', label: 'Order Medicines', icon: Pill },
   { href: '/doctors', label: 'Doctors', icon: Stethoscope },
   { href: '/lab-tests', label: 'Lab Tests', icon: TestTube },
   { href: '/ai-assistant', label: 'AI Assistant', icon: Bot },

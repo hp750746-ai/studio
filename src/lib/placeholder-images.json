@@ -347,6 +347,12 @@
       "description": "Aciphex antacid pills",
       "imageUrl": "https://images.unsplash.com/photo-1646392206581-2527b1cae5cb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhbnRhY2lkJTIwcGlsbHN8ZW58MHx8fHwxNzcxMDk4MTAwfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "antacid pills"
+    },
+    {
+      "id": "order-online",
+      "description": "Person ordering medicines online from a smartphone",
+      "imageUrl": "https://images.unsplash.com/photo-1621921137078-4a371e79391b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxvbmxpbmUlMjBwaGFybWFjeXxlbnwwfHx8fDE3NzEyNzUwMTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "online pharmacy"
     }
   ]
 }
