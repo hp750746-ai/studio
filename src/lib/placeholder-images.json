@@ -143,6 +143,30 @@
       "description": "A secure lock icon with a digital background",
       "imageUrl": "https://images.unsplash.com/photo-1617228679684-890412dc57a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxkaWdpdGFsJTIwc2VjdXJpdHl8ZW58MHx8fHwxNzcwMzQ2NjI1fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "digital security"
+    },
+    {
+      "id": "medicine-10",
+      "description": "A strip of antibiotic pills",
+      "imageUrl": "https://images.unsplash.com/photo-1626870884221-5d1f44f61bbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YW50aWJpb3RpYyUyMHBpbGxzfGVufDB8fHx8MTc3MDM0NzgxMXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "antibiotic pills"
+    },
+    {
+      "id": "medicine-11",
+      "description": "An insulin pen for diabetes management",
+      "imageUrl": "https://images.unsplash.com/photo-1683547798053-f93f03a9fa4b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxpbnN1bGluJTIwcGVufGVufDB8fHx8MTc3MDM0NzgxMXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "insulin pen"
+    },
+    {
+      "id": "medicine-12",
+      "description": "A pack of sanitary pads",
+      "imageUrl": "https://images.unsplash.com/photo-1712842955521-55c8c01ef148?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxzYW5pdGFyeSUyMHBhZHN8ZW58MHx8fHwxNzcwMzQ3ODExfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "sanitary pads"
+    },
+    {
+      "id": "medicine-13",
+      "description": "A bottle of multivitamin supplements",
+      "imageUrl": "https://images.unsplash.com/photo-1722843065077-f47ea1269bd8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx2aXRhbWluJTIwYm90dGxlfGVufDB8fHx8MTc3MDI1NTA0M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "vitamin bottle"
     }
   ]
 }

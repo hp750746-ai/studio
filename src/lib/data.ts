@@ -157,6 +157,43 @@ export const medicines: Medicine[] = [
     image: 'medicine-9',
     requiresPrescription: false,
     tags: ['skin care', 'top']
+  },
+  {
+    id: 'med12',
+    name: 'Amoxicillin 500mg',
+    price: 150,
+    category: 'Tablets',
+    image: 'medicine-10',
+    requiresPrescription: true,
+    tags: ['antibiotic']
+  },
+  {
+    id: 'med13',
+    name: 'Insulin Pen',
+    price: 800,
+    category: 'Injection',
+    image: 'medicine-11',
+    requiresPrescription: true,
+    tags: ['diabetes/bp']
+  },
+  {
+    id: 'med14',
+    name: 'Sanitary Pads (Pack of 20)',
+    price: 200,
+    category: 'Personal Care',
+    image: 'medicine-12',
+    requiresPrescription: false,
+    tags: ['hygiene', 'top']
+  },
+  {
+    id: 'med15',
+    name: 'Multivitamin Tablets (30 count)',
+    price: 400,
+    discount: 10,
+    category: 'Tablets',
+    image: 'medicine-13',
+    requiresPrescription: false,
+    tags: ['wellness', 'top']
   }
 ];
 
