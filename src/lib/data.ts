@@ -194,6 +194,177 @@ export const medicines: Medicine[] = [
     image: 'medicine-13',
     requiresPrescription: false,
     tags: ['wellness', 'top']
+  },
+  {
+    id: 'med16',
+    name: 'A/B Otic',
+    price: 250,
+    category: 'Topical',
+    image: 'medicine-14',
+    requiresPrescription: true,
+    tags: ['ear care']
+  },
+  {
+    id: 'med17',
+    name: 'Abacavir',
+    price: 1200,
+    category: 'Tablets',
+    image: 'medicine-15',
+    requiresPrescription: true,
+    tags: ['antiviral']
+  },
+  {
+    id: 'med18',
+    name: 'Abacavir Oral Solution',
+    price: 1500,
+    category: 'Syrup',
+    image: 'medicine-16',
+    requiresPrescription: true,
+    tags: ['antiviral']
+  },
+  {
+    id: 'med19',
+    name: 'Abaloparatide',
+    price: 3500,
+    category: 'Injection',
+    image: 'medicine-17',
+    requiresPrescription: true,
+    tags: ['osteoporosis']
+  },
+  {
+    id: 'med20',
+    name: 'Abametapir',
+    price: 450,
+    category: 'Topical',
+    image: 'medicine-18',
+    requiresPrescription: true,
+    tags: ['lice treatment']
+  },
+  {
+    id: 'med21',
+    name: 'Abatuss DMX',
+    price: 180,
+    category: 'Syrup',
+    image: 'medicine-19',
+    requiresPrescription: false,
+    tags: ['cough', 'cold']
+  },
+  {
+    id: 'med22',
+    name: 'Abavite',
+    price: 300,
+    category: 'Tablets',
+    image: 'medicine-20',
+    requiresPrescription: false,
+    tags: ['vitamin']
+  },
+  {
+    id: 'med23',
+    name: 'Abbokinase',
+    price: 5000,
+    category: 'Injection',
+    image: 'medicine-21',
+    requiresPrescription: true,
+    tags: ['thrombolytic']
+  },
+  {
+    id: 'med24',
+    name: 'Abciximab',
+    price: 6000,
+    category: 'Injection',
+    image: 'medicine-22',
+    requiresPrescription: true,
+    tags: ['antiplatelet']
+  },
+  {
+    id: 'med25',
+    name: 'Abemaciclib',
+    price: 8000,
+    category: 'Tablets',
+    image: 'medicine-23',
+    requiresPrescription: true,
+    tags: ['cancer']
+  },
+  {
+    id: 'med26',
+    name: 'Abilify',
+    price: 900,
+    category: 'Tablets',
+    image: 'medicine-24',
+    requiresPrescription: true,
+    tags: ['antipsychotic']
+  },
+  {
+    id: 'med27',
+    name: 'Abiraterone',
+    price: 7500,
+    category: 'Tablets',
+    image: 'medicine-25',
+    requiresPrescription: true,
+    tags: ['cancer']
+  },
+  {
+    id: 'med28',
+    name: 'Ablavar',
+    price: 4500,
+    category: 'Injection',
+    image: 'medicine-26',
+    requiresPrescription: true,
+    tags: ['diagnostic']
+  },
+  {
+    id: 'med29',
+    name: 'Abraxane',
+    price: 9500,
+    category: 'Injection',
+    image: 'medicine-27',
+    requiresPrescription: true,
+    tags: ['cancer']
+  },
+  {
+    id: 'med30',
+    name: 'Abreva',
+    price: 220,
+    category: 'Topical',
+    image: 'medicine-28',
+    requiresPrescription: false,
+    tags: ['cold sore']
+  },
+  {
+    id: 'med31',
+    name: 'Abrocitinib',
+    price: 1500,
+    category: 'Tablets',
+    image: 'medicine-29',
+    requiresPrescription: true,
+    tags: ['dermatology']
+  },
+  {
+    id: 'med32',
+    name: 'Absorbine Athletes Foot',
+    price: 150,
+    category: 'Topical',
+    image: 'medicine-30',
+    requiresPrescription: false,
+    tags: ['antifungal']
+  },
+  {
+    id: 'med33',
+    name: 'Absorica',
+    price: 2500,
+    category: 'Tablets',
+    image: 'medicine-31',
+    requiresPrescription: true,
+    tags: ['acne']
+  },
+  {
+    id: 'med34',
+    name: 'Abstral',
+    price: 1800,
+    category: 'Tablets',
+    image: 'medicine-32',
+    requiresPrescription: true,
+    tags: ['pain relief']
   }
 ];
 
