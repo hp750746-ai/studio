@@ -365,6 +365,106 @@ export const medicines: Medicine[] = [
     image: 'medicine-32',
     requiresPrescription: true,
     tags: ['pain relief']
+  },
+  {
+    id: 'med35',
+    name: 'Acarbose 50mg',
+    price: 550,
+    category: 'Tablets',
+    image: 'medicine-33',
+    requiresPrescription: true,
+    tags: ['diabetes/bp']
+  },
+  {
+    id: 'med36',
+    name: 'Acetaminophen 500mg',
+    price: 45,
+    discount: 10,
+    category: 'Tablets',
+    image: 'medicine-34',
+    requiresPrescription: false,
+    tags: ['pain relief', 'fever']
+  },
+  {
+    id: 'med37',
+    name: 'Acebutolol Hydrochloride 200mg',
+    price: 750,
+    category: 'Tablets',
+    image: 'medicine-35',
+    requiresPrescription: true,
+    tags: ['diabetes/bp']
+  },
+  {
+    id: 'med38',
+    name: 'Acetylcysteine Effervescent Tablets',
+    price: 320,
+    category: 'Tablets',
+    image: 'medicine-36',
+    requiresPrescription: false,
+    tags: ['respiratory']
+  },
+  {
+    id: 'med39',
+    name: 'Acyclovir Cream 5%',
+    price: 280,
+    category: 'Topical',
+    image: 'medicine-37',
+    requiresPrescription: true,
+    tags: ['antiviral', 'skin care']
+  },
+  {
+    id: 'med40',
+    name: 'Actifed Cold and Allergy',
+    price: 150,
+    category: 'Tablets',
+    image: 'medicine-38',
+    requiresPrescription: false,
+    tags: ['cold', 'allergy']
+  },
+  {
+    id: 'med41',
+    name: 'Acular LS Ophthalmic Solution',
+    price: 450,
+    category: 'Topical',
+    image: 'medicine-39',
+    requiresPrescription: true,
+    tags: ['eye care']
+  },
+  {
+    id: 'med42',
+    name: 'Accupril Tablets',
+    price: 900,
+    category: 'Tablets',
+    image: 'medicine-40',
+    requiresPrescription: true,
+    tags: ['diabetes/bp']
+  },
+  {
+    id: 'med43',
+    name: 'Actos (Pioglitazone)',
+    price: 1100,
+    category: 'Tablets',
+    image: 'medicine-41',
+    requiresPrescription: true,
+    tags: ['diabetes/bp']
+  },
+  {
+    id: 'med44',
+    name: 'Acetaminophen & Ibuprofen Dual Action',
+    price: 200,
+    category: 'Tablets',
+    image: 'medicine-42',
+    requiresPrescription: false,
+    tags: ['pain relief', 'fever']
+  },
+  {
+    id: 'med45',
+    name: 'Aciphex (Rabeprazole)',
+    price: 650,
+    category: 'Tablets',
+    image: 'medicine-43',
+    requiresPrescription: true,
+    tags: ['acidity']
   }
 ];
 
