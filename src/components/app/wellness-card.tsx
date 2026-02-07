@@ -45,7 +45,7 @@ export default function WellnessCard({ article, className }: WellnessCardProps) 
       </CardContent>
       <CardFooter>
         <Button variant="outline" asChild>
-          <Link href="#">Read More</Link>
+          <Link href={`/wellness/${article.id}`}>Read More</Link>
         </Button>
       </CardFooter>
     </Card>

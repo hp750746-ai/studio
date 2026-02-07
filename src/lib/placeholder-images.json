@@ -383,6 +383,12 @@
       "description": "Tube of Acanya acne gel",
       "imageUrl": "https://images.unsplash.com/photo-1600608933254-8072175a7432?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwYWluJTIwcmVsaWVmJTIwZ2VsfGVufDB8fHx8MTc3MDQxMzQwNnww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "gel tube"
+    },
+    {
+      "id": "medicine-49",
+      "description": "Tube of Aczone acne gel",
+      "imageUrl": "https://images.unsplash.com/photo-1621058296769-d4264267b140?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxza2luJTIwY3JlYW18ZW58MHx8fHwxNzcxMDk3OTQyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "acne cream"
     }
   ]
 }

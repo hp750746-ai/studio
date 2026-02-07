@@ -510,6 +510,15 @@ export const medicines: Medicine[] = [
     image: 'medicine-48',
     requiresPrescription: true,
     tags: ['acne', 'skin care']
+  },
+  {
+    id: 'med51',
+    name: 'Aczone Gel 7.5%',
+    price: 3500,
+    category: 'Topical',
+    image: 'medicine-49',
+    requiresPrescription: true,
+    tags: ['acne', 'skin care']
   }
 ];
 
