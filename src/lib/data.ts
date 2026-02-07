@@ -465,6 +465,51 @@ export const medicines: Medicine[] = [
     image: 'medicine-43',
     requiresPrescription: true,
     tags: ['acidity']
+  },
+  {
+    id: 'med46',
+    name: 'A-Caro-25 (Beta-Carotene)',
+    price: 350,
+    category: 'Tablets',
+    image: 'medicine-44',
+    requiresPrescription: false,
+    tags: ['vitamin', 'wellness']
+  },
+  {
+    id: 'med47',
+    name: 'Acacia Gum Powder',
+    price: 450,
+    category: 'Personal Care',
+    image: 'medicine-45',
+    requiresPrescription: false,
+    tags: ['wellness', 'fiber']
+  },
+  {
+    id: 'med48',
+    name: 'Acalabrutinib 100mg Capsules',
+    price: 9500,
+    category: 'Tablets',
+    image: 'medicine-46',
+    requiresPrescription: true,
+    tags: ['cancer']
+  },
+  {
+    id: 'med49',
+    name: 'Acamprosate Delayed Release Tablets',
+    price: 2200,
+    category: 'Tablets',
+    image: 'medicine-47',
+    requiresPrescription: true,
+    tags: ['addiction']
+  },
+  {
+    id: 'med50',
+    name: 'Acanya Gel (Clindamycin/Benzoyl Peroxide)',
+    price: 1300,
+    category: 'Topical',
+    image: 'medicine-48',
+    requiresPrescription: true,
+    tags: ['acne', 'skin care']
   }
 ];
 
