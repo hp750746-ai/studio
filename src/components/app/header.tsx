@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import type { Medicine } from '@/lib/types';
+import type { CartItem } from '@/lib/types';
 
 const navItems = [
   { href: '/store', label: 'Medicines', icon: Pill },
@@ -44,7 +44,7 @@ export default function Header() {
 
   useEffect(() => {
     const updateCartCount = () => {
-      const cart: Medicine[] = JSON.parse(localStorage.getItem('cart') || '[]');
+      const cart: CartItem[] = JSON.parse(localStorage.getItem('cart') || '[]');
       setCartCount(cart.length);
     };
 

@@ -32,15 +32,27 @@ import DoctorCard from '@/components/app/doctor-card';
 import MedicineCard from '@/components/app/medicine-card';
 import { doctors, medicines, healthTips } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useToast } from '@/hooks/use-toast';
 
 const heroImage = PlaceHolderImages.find(img => img.id === 'hero-1');
 
 export default function Home() {
   const [healthTip, setHealthTip] = useState('');
+  const { toast } = useToast();
 
   useEffect(() => {
     setHealthTip(healthTips[Math.floor(Math.random() * healthTips.length)]);
   }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const query = formData.get('search');
+    toast({
+        title: "Search Submitted",
+        description: `You searched for: "${query}"`,
+    });
+};
 
   return (
     <div className="flex flex-col gap-12 md:gap-16 lg:gap-24 pb-12">
@@ -53,22 +65,21 @@ export default function Home() {
             <p className="text-lg md:text-xl text-foreground/80 max-w-2xl">
               Aapki Sehat Ka Online Doctor. <br/> Medicine + Doctor, Sab Ek Jagah.
             </p>
-            <div className="w-full max-w-md flex items-center space-x-2 bg-white p-2 rounded-lg shadow-lg">
+            <form onSubmit={handleSearch} className="w-full max-w-md flex items-center space-x-2 bg-white p-2 rounded-lg shadow-lg">
               <Input
                 type="search"
+                name="search"
                 placeholder="Search for medicines, doctors, diseases..."
                 className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
               <Button type="submit" size="icon" aria-label="Search">
                 <Search className="h-5 w-5" />
               </Button>
-            </div>
+            </form>
             <div className="flex items-center gap-4 mt-4">
-              <Button size="lg" variant="destructive" asChild>
-                <Link href="#">
+               <Button size="lg" variant="destructive" onClick={() => toast({ title: "Emergency services are not available in this demo."})}>
                   <Siren className="mr-2 h-5 w-5" /> Emergency
-                </Link>
-              </Button>
+                </Button>
               <p className="text-sm text-muted-foreground">
                 Nearest Hospital & Call
               </p>

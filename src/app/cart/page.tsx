@@ -8,45 +8,35 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import type { Medicine } from '@/lib/types';
+import type { CartItem } from '@/lib/types';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-
-type CartItem = Medicine & { quantity: number };
 
 export default function CartPage() {
   const { toast } = useToast();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isClient, setIsClient] = useState(false);
 
-  const updateCartInStateAndStorage = (newCart: CartItem[]) => {
-    setCartItems(newCart);
-    const itemsToStore = newCart.map(({ quantity, ...item }) => item);
-    localStorage.setItem('cart', JSON.stringify(itemsToStore));
-    window.dispatchEvent(new Event('cart-updated'));
-  };
-
   useEffect(() => {
     setIsClient(true);
-    const itemsFromStorage: Medicine[] = JSON.parse(localStorage.getItem('cart') || '[]');
-    const itemsWithQuantity = itemsFromStorage.map((item) => {
-        const existingItem = cartItems.find(ci => ci.id === item.id);
-        return existingItem ? existingItem : {...item, quantity: 1}
-    });
-    setCartItems(itemsWithQuantity);
+    const itemsFromStorage: CartItem[] = JSON.parse(localStorage.getItem('cart') || '[]');
+    setCartItems(itemsFromStorage);
 
-    const handleStorageChange = (e: Event) => {
-        const items: Medicine[] = JSON.parse(localStorage.getItem('cart') || '[]');
-         const itemsWithQuantity = items.map((item) => ({...item, quantity: 1}));
-         setCartItems(itemsWithQuantity);
-    }
+    const handleStorageChange = () => {
+      const updatedCart: CartItem[] = JSON.parse(localStorage.getItem('cart') || '[]');
+      setCartItems(updatedCart);
+    };
+
     window.addEventListener('cart-updated', handleStorageChange);
-    return () => window.removeEventListener('cart-updated', handleStorageChange);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      window.removeEventListener('cart-updated', handleStorageChange);
+    };
   }, []);
   
   const handleRemoveItem = (itemId: string) => {
     const newCart = cartItems.filter((item) => item.id !== itemId);
-    updateCartInStateAndStorage(newCart);
+    setCartItems(newCart);
+    localStorage.setItem('cart', JSON.stringify(newCart));
+    window.dispatchEvent(new Event('cart-updated'));
     toast({
         title: "Item Removed",
         description: "The item has been removed from your cart."
@@ -60,6 +50,7 @@ export default function CartPage() {
         : item
       );
       setCartItems(newCart);
+      localStorage.setItem('cart', JSON.stringify(newCart));
   }
 
   const getSubtotal = () => {

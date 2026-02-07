@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import type { Medicine } from '@/lib/types';
+import type { Medicine, CartItem } from '@/lib/types';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
 import {
@@ -29,7 +29,7 @@ export default function MedicineCard({ medicine, className }: MedicineCardProps)
     : medicine.price;
 
   const handleAddToCart = () => {
-    const cart: Medicine[] = JSON.parse(localStorage.getItem('cart') || '[]');
+    const cart: CartItem[] = JSON.parse(localStorage.getItem('cart') || '[]');
     const existingItem = cart.find((item) => item.id === medicine.id);
 
     if (existingItem) {
@@ -38,7 +38,8 @@ export default function MedicineCard({ medicine, className }: MedicineCardProps)
         description: `${medicine.name} is already in your cart.`,
       });
     } else {
-      localStorage.setItem('cart', JSON.stringify([...cart, medicine]));
+      const newCartItem: CartItem = { ...medicine, quantity: 1 };
+      localStorage.setItem('cart', JSON.stringify([...cart, newCartItem]));
       window.dispatchEvent(new Event('cart-updated'));
       toast({
         title: "Added to Cart",

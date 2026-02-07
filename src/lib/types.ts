@@ -37,3 +37,7 @@ export type WellnessArticle = {
   image: string;
   description: string;
 };
+
+export type CartItem = Medicine & {
+  quantity: number;
+};
