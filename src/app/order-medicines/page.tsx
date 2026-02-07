@@ -1,6 +1,9 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Pill, Upload } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -14,15 +17,21 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
-export const metadata = {
-  title: 'Order Medicines Online | HealthLinke',
-  description: 'Upload your prescription and get medicines delivered to your doorstep.',
-};
-
 const orderImage = PlaceHolderImages.find(p => p.id === 'order-online');
 
 
 export default function OrderMedicinesPage() {
+    const { toast } = useToast();
+
+    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        toast({
+            title: "Order Placed!",
+            description: "We have received your order and will process it shortly.",
+        });
+        (event.target as HTMLFormElement).reset();
+    };
+
   return (
     <div className="container mx-auto py-12">
         <div className="w-full lg:grid lg:grid-cols-2 gap-12">
@@ -36,36 +45,38 @@ export default function OrderMedicinesPage() {
                     </p>
                 </div>
                 <Card>
-                    <CardContent className="grid gap-4 pt-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="full-name">Full Name</Label>
-                        <Input id="full-name" placeholder="John Doe" required />
-                    </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="phone">Phone Number</Label>
-                        <Input id="phone" type="tel" placeholder="+91 12345 67890" required />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="address">Delivery Address</Label>
-                        <Textarea id="address" placeholder="Enter your full address" required />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="prescription">Upload Prescription</Label>
-                        <div className="flex items-center justify-center w-full">
-                            <label htmlFor="prescription" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
-                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
-                                    <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                    <p className="text-xs text-muted-foreground">JPG, PNG, or PDF (MAX. 5MB)</p>
-                                </div>
-                                <Input id="prescription" type="file" className="hidden" />
-                            </label>
+                    <form onSubmit={handleSubmit}>
+                        <CardContent className="grid gap-4 pt-6">
+                        <div className="grid gap-2">
+                            <Label htmlFor="full-name">Full Name</Label>
+                            <Input id="full-name" placeholder="John Doe" required />
                         </div>
-                    </div>
-                    <Button type="submit" className="w-full">
-                        Place Order
-                    </Button>
-                    </CardContent>
+                        <div className="grid gap-2">
+                            <Label htmlFor="phone">Phone Number</Label>
+                            <Input id="phone" type="tel" placeholder="+91 12345 67890" required />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="address">Delivery Address</Label>
+                            <Textarea id="address" placeholder="Enter your full address" required />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="prescription">Upload Prescription</Label>
+                            <div className="flex items-center justify-center w-full">
+                                <label htmlFor="prescription" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
+                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                        <p className="text-xs text-muted-foreground">JPG, PNG, or PDF (MAX. 5MB)</p>
+                                    </div>
+                                    <Input id="prescription" type="file" className="hidden" />
+                                </label>
+                            </div>
+                        </div>
+                        <Button type="submit" className="w-full">
+                            Place Order
+                        </Button>
+                        </CardContent>
+                    </form>
                 </Card>
                 </div>
             </div>

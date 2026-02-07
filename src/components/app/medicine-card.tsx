@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 
 import type { Medicine } from '@/lib/types';
@@ -6,13 +8,13 @@ import { cn } from '@/lib/utils';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
   CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 type MedicineCardProps = {
   medicine: Medicine;
@@ -20,10 +22,18 @@ type MedicineCardProps = {
 };
 
 export default function MedicineCard({ medicine, className }: MedicineCardProps) {
+  const { toast } = useToast();
   const image = PlaceHolderImages.find(img => img.id === medicine.image);
   const discountedPrice = medicine.discount
     ? medicine.price - (medicine.price * medicine.discount) / 100
     : medicine.price;
+
+  const handleAddToCart = () => {
+    toast({
+      title: "Added to Cart",
+      description: `${medicine.name} has been added to your cart.`,
+    });
+  };
 
   return (
     <Card className={cn('flex flex-col overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300', className)}>
@@ -55,7 +65,7 @@ export default function MedicineCard({ medicine, className }: MedicineCardProps)
         </div>
       </CardContent>
       <CardFooter className="p-3 pt-0">
-        <Button className="w-full" size="sm">Add to Cart</Button>
+        <Button className="w-full" size="sm" onClick={handleAddToCart}>Add to Cart</Button>
       </CardFooter>
     </Card>
   );

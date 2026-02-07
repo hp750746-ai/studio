@@ -12,6 +12,7 @@ import {
   Bot,
   Sparkles,
   ShoppingCart,
+  Upload,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -26,8 +27,8 @@ import {
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/store', label: 'Shop', icon: ShoppingCart },
-  { href: '/order-medicines', label: 'Order Medicines', icon: Pill },
+  { href: '/store', label: 'Medicines', icon: Pill },
+  { href: '/order-medicines', label: 'Order', icon: Upload },
   { href: '/doctors', label: 'Doctors', icon: Stethoscope },
   { href: '/lab-tests', label: 'Lab Tests', icon: TestTube },
   { href: '/ai-assistant', label: 'AI Assistant', icon: Bot },
@@ -86,7 +87,13 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/cart">
+              <ShoppingCart className="h-5 w-5" />
+              <span className="sr-only">Shopping Cart</span>
+            </Link>
+          </Button>
           <Button variant="ghost" size="icon" asChild>
             <Link href="/login">
               <User className="h-5 w-5" />
@@ -115,6 +122,20 @@ export default function Header() {
                   {navItems.map((item) => (
                     <NavLink key={item.href} {...item} isMobile />
                   ))}
+                  <div className="border-t pt-4 mt-4 flex items-center gap-4">
+                     <Button variant="outline" className="w-full" asChild>
+                        <Link href="/cart" onClick={() => setMobileMenuOpen(false)}>
+                            <ShoppingCart className="mr-2 h-5 w-5" />
+                            My Cart
+                        </Link>
+                     </Button>
+                     <Button className="w-full" asChild>
+                        <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                            <User className="mr-2 h-5 w-5" />
+                            Login
+                        </Link>
+                     </Button>
+                  </div>
                 </nav>
               </SheetContent>
             </Sheet>

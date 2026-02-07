@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { Star, Phone, MessageSquare, Video } from 'lucide-react';
 
 import type { Doctor } from '@/lib/types';
@@ -57,7 +58,9 @@ export default function DoctorCard({ doctor, className }: DoctorCardProps) {
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <Button className="w-full" variant="secondary">Book Now</Button>
+        <Button className="w-full" variant="secondary" asChild>
+            <Link href={`/doctors/${doctor.id}`}>Book Now</Link>
+        </Button>
       </CardFooter>
     </Card>
   );

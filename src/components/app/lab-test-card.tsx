@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { Home, Clock } from 'lucide-react';
 
 import type { LabTest } from '@/lib/types';
@@ -56,7 +57,9 @@ export default function LabTestCard({ test, className }: LabTestCardProps) {
       </CardContent>
       <CardFooter className="flex justify-between items-center bg-muted/50 p-4">
         <p className="text-xl font-bold text-primary">₹{test.price}</p>
-        <Button>Book Now</Button>
+        <Button asChild>
+            <Link href={`/lab-tests/${test.id}`}>Book Now</Link>
+        </Button>
       </CardFooter>
     </Card>
   );
