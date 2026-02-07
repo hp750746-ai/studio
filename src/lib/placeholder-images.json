@@ -141,8 +141,8 @@
     {
       "id": "login-hero",
       "description": "A secure lock icon with a digital background",
-      "imageUrl": "https://images.unsplash.com/photo-1617228679684-890412dc57a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxkaWdpdGFsJTIwc2VjdXJpdHl8ZW58MHx8fHwxNzcwMzQ2NjI1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "digital security"
+      "imageUrl": "https://images.unsplash.com/photo-1617228679684-890412dc57a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxrZXlzJTIwc2VjdXJpdHl8ZW58MHx8fHwxNzcxMjgzMDM3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "keys security"
     },
     {
       "id": "medicine-10",
@@ -350,9 +350,9 @@
     },
     {
       "id": "order-online",
-      "description": "Person ordering medicines online from a smartphone",
-      "imageUrl": "https://images.unsplash.com/photo-1621921137078-4a371e79391b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxvbmxpbmUlMjBwaGFybWFjeXxlbnwwfHx8fDE3NzEyNzUwMTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "online pharmacy"
+      "description": "A delivery person holding a box of medicines",
+      "imageUrl": "https://images.unsplash.com/photo-1585250474601-0570a16b9b3f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxtZWRpY2luZSUyMGRlbGl2ZXJ5fGVufDB8fHx8MTc3MTI3Nzk1Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "medicine delivery"
     }
   ]
 }

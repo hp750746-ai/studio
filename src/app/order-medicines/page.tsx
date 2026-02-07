@@ -73,7 +73,7 @@ export default function OrderMedicinesPage() {
                 {orderImage && (
                     <Image
                     src={orderImage.imageUrl}
-                    alt="Order medicines online"
+                    alt="Fast and easy medicine delivery"
                     fill
                     className="object-cover dark:brightness-[0.2] dark:grayscale"
                     data-ai-hint={orderImage.imageHint}
