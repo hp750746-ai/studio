@@ -29,10 +29,22 @@ export default function MedicineCard({ medicine, className }: MedicineCardProps)
     : medicine.price;
 
   const handleAddToCart = () => {
-    toast({
-      title: "Added to Cart",
-      description: `${medicine.name} has been added to your cart.`,
-    });
+    const cart: Medicine[] = JSON.parse(localStorage.getItem('cart') || '[]');
+    const existingItem = cart.find((item) => item.id === medicine.id);
+
+    if (existingItem) {
+      toast({
+        title: 'Already in Cart',
+        description: `${medicine.name} is already in your cart.`,
+      });
+    } else {
+      localStorage.setItem('cart', JSON.stringify([...cart, medicine]));
+      window.dispatchEvent(new Event('cart-updated'));
+      toast({
+        title: "Added to Cart",
+        description: `${medicine.name} has been added to your cart.`,
+      });
+    }
   };
 
   return (

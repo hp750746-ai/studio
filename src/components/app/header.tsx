@@ -14,7 +14,7 @@ import {
   ShoppingCart,
   Upload,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -25,6 +25,8 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import type { Medicine } from '@/lib/types';
 
 const navItems = [
   { href: '/store', label: 'Medicines', icon: Pill },
@@ -38,6 +40,34 @@ const navItems = [
 export default function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    const updateCartCount = () => {
+      const cart: Medicine[] = JSON.parse(localStorage.getItem('cart') || '[]');
+      setCartCount(cart.length);
+    };
+
+    updateCartCount();
+
+    window.addEventListener('cart-updated', updateCartCount);
+
+    // Listen for storage changes from other tabs
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'cart') {
+        updateCartCount();
+      }
+    });
+
+    return () => {
+      window.removeEventListener('cart-updated', updateCartCount);
+       window.removeEventListener('storage', (e) => {
+        if (e.key === 'cart') {
+            updateCartCount();
+        }
+      });
+    };
+  }, []);
 
   const NavLink = ({
     href,
@@ -89,8 +119,13 @@ export default function Header() {
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/cart">
+            <Link href="/cart" className="relative">
               <ShoppingCart className="h-5 w-5" />
+              {cartCount > 0 && (
+                 <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 text-xs justify-center p-0 rounded-full">
+                   {cartCount}
+                 </Badge>
+              )}
               <span className="sr-only">Shopping Cart</span>
             </Link>
           </Button>
@@ -123,10 +158,13 @@ export default function Header() {
                     <NavLink key={item.href} {...item} isMobile />
                   ))}
                   <div className="border-t pt-4 mt-4 flex items-center gap-4">
-                     <Button variant="outline" className="w-full" asChild>
+                     <Button variant="outline" className="w-full relative" asChild>
                         <Link href="/cart" onClick={() => setMobileMenuOpen(false)}>
                             <ShoppingCart className="mr-2 h-5 w-5" />
                             My Cart
+                            {cartCount > 0 && (
+                                <Badge variant="destructive" className="absolute top-1.5 right-1.5 h-4 w-4 justify-center p-0 text-xs rounded-full">{cartCount}</Badge>
+                            )}
                         </Link>
                      </Button>
                      <Button className="w-full" asChild>
