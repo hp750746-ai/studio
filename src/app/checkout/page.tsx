@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useUser } from '@/firebase';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -38,6 +39,12 @@ export default function CheckoutPage() {
     }
     setCartItems(itemsFromStorage);
   }, [router]);
+  
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
 
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
@@ -76,8 +83,25 @@ export default function CheckoutPage() {
     router.push('/checkout/success');
   };
 
-  if (!isClient || isUserLoading) {
-      return null;
+  if (!isClient || isUserLoading || !user) {
+      return (
+        <div className="container mx-auto py-12">
+            <div className="text-center mb-12">
+                <Skeleton className='h-16 w-16 mx-auto' />
+                <Skeleton className="h-10 w-1/2 mt-4 mx-auto" />
+                <Skeleton className="h-6 w-3/4 mt-2 mx-auto" />
+            </div>
+             <div className="grid lg:grid-cols-3 gap-8 items-start">
+                <div className="lg:col-span-2 space-y-8">
+                    <Skeleton className="h-64 w-full" />
+                    <Skeleton className="h-32 w-full" />
+                </div>
+                <div className="lg:col-span-1">
+                    <Skeleton className="h-72 w-full" />
+                </div>
+            </div>
+        </div>
+      );
   }
 
   return (

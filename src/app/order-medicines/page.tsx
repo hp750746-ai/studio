@@ -16,12 +16,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const orderImage = PlaceHolderImages.find(p => p.id === 'order-online');
 
 
 export default function OrderMedicinesPage() {
     const { toast } = useToast();
+    const { user, isUserLoading } = useUser();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!isUserLoading && !user) {
+        router.push('/login');
+        }
+    }, [user, isUserLoading, router]);
+
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -31,6 +44,48 @@ export default function OrderMedicinesPage() {
         });
         (event.target as HTMLFormElement).reset();
     };
+
+    if (isUserLoading || !user) {
+        return (
+            <div className="container mx-auto py-12">
+                <div className="w-full lg:grid lg:grid-cols-2 gap-12">
+                    <div className="flex items-center justify-center py-12">
+                         <div className="mx-auto grid w-full max-w-lg gap-6">
+                            <div className="grid gap-2 text-center">
+                                <Skeleton className="h-12 w-12 mx-auto"/>
+                                <Skeleton className="h-8 w-48 mx-auto mt-2"/>
+                                <Skeleton className="h-4 w-64 mx-auto mt-2"/>
+                            </div>
+                            <Card>
+                                <CardContent className="grid gap-4 pt-6">
+                                    <div className="grid gap-2">
+                                        <Skeleton className="h-4 w-20"/>
+                                        <Skeleton className="h-10 w-full"/>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Skeleton className="h-4 w-24"/>
+                                        <Skeleton className="h-10 w-full"/>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Skeleton className="h-4 w-28"/>
+                                        <Skeleton className="h-20 w-full"/>
+                                    </div>
+                                     <div className="grid gap-2">
+                                        <Skeleton className="h-4 w-32"/>
+                                        <Skeleton className="h-32 w-full"/>
+                                    </div>
+                                    <Skeleton className="h-10 w-full"/>
+                                </CardContent>
+                            </Card>
+                         </div>
+                    </div>
+                    <div className="hidden bg-muted lg:block relative rounded-lg overflow-hidden">
+                         <Skeleton className="h-full w-full"/>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
   return (
     <div className="container mx-auto py-12">
@@ -49,7 +104,7 @@ export default function OrderMedicinesPage() {
                         <CardContent className="grid gap-4 pt-6">
                         <div className="grid gap-2">
                             <Label htmlFor="full-name">Full Name</Label>
-                            <Input id="full-name" placeholder="John Doe" required />
+                            <Input id="full-name" placeholder="John Doe" required defaultValue={user.displayName || ''} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="phone">Phone Number</Label>
