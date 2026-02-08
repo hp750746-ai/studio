@@ -1,22 +1,78 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
-import { Users, PlusCircle } from 'lucide-react';
+import { Users, PlusCircle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useToast } from '@/hooks/use-toast';
+
+const memberSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  relationship: z.string().min(2, { message: "Relationship is required." }),
+  age: z.coerce.number().min(0, { message: "Age must be a positive number." }),
+});
+
+type FamilyMember = z.infer<typeof memberSchema> & { id: string };
 
 export default function FamilyPage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const [members, setMembers] = useState<FamilyMember[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push('/login');
     }
   }, [user, isUserLoading, router]);
+
+  const form = useForm<z.infer<typeof memberSchema>>({
+    resolver: zodResolver(memberSchema),
+    defaultValues: {
+      name: '',
+      relationship: '',
+      age: undefined,
+    }
+  });
+
+  const handleAddMember = (values: z.infer<typeof memberSchema>) => {
+    const newMember: FamilyMember = {
+      id: new Date().toISOString(),
+      ...values,
+    };
+    setMembers(prev => [...prev, newMember]);
+    toast({
+      title: 'Member Added',
+      description: `${values.name} has been added to your family members.`,
+    });
+    form.reset();
+    setIsDialogOpen(false);
+  }
+
+  const handleDeleteMember = (id: string) => {
+    setMembers(prev => prev.filter(member => member.id !== id));
+    toast({
+      title: 'Member Removed',
+      variant: 'destructive'
+    });
+  }
 
   if (isUserLoading || !user) {
     return (
@@ -50,14 +106,86 @@ export default function FamilyPage() {
         <CardHeader className="flex flex-row items-center justify-between">
             <div>
                 <CardTitle>Your Family Members</CardTitle>
-                <CardDescription>You have not added any family members yet.</CardDescription>
+                <CardDescription>
+                  {members.length > 0 ? `You have ${members.length} family member(s).` : 'You have not added any family members yet.'}
+                </CardDescription>
             </div>
-            <Button>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Member
-            </Button>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add Member
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Add Family Member</DialogTitle>
+                  <DialogDescription>
+                    Enter the details of your new family member. Click save when you're done.
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleAddMember)} className="space-y-4">
+                     <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Full Name</FormLabel>
+                            <FormControl><Input placeholder="e.g., Jane Doe" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="relationship"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Relationship</FormLabel>
+                            <FormControl><Input placeholder="e.g., Spouse, Child" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                        control={form.control}
+                        name="age"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Age</FormLabel>
+                            <FormControl><Input type="number" placeholder="e.g., 34" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    <DialogFooter>
+                      <Button type="submit">Save Member</Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
         </CardHeader>
-        <CardContent className='text-center text-muted-foreground py-12'>
-            <p>Added family members will appear here.</p>
+        <CardContent>
+            {members.length === 0 ? (
+                <div className='text-center text-muted-foreground py-12'>
+                    <p>Added family members will appear here.</p>
+                </div>
+            ) : (
+                <ul className="divide-y">
+                    {members.map(member => (
+                        <li key={member.id} className="flex justify-between items-center py-4">
+                            <div>
+                                <p className="font-semibold">{member.name}</p>
+                                <p className="text-sm text-muted-foreground">{member.relationship}, {member.age} years old</p>
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteMember(member.id)}>
+                                <Trash2 className="h-5 w-5 text-destructive" />
+                            </Button>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </CardContent>
       </Card>
     </div>
