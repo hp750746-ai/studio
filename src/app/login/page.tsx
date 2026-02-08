@@ -1,26 +1,71 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
-import { HeartPulse, LockKeyhole } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { LockKeyhole } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useAuth, useUser } from '@/firebase';
+import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
+import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form';
 
-export const metadata = {
-  title: 'Login to HealthLinke',
-  description: 'Access your HealthLinke account.',
-};
+
+const loginSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email.' }),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+});
 
 const loginImage = PlaceHolderImages.find(p => p.id === 'login-hero');
 
 export default function LoginPage() {
+  const auth = useAuth();
+  const { user } = useUser();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
+
+
+  const onSubmit = (values: z.infer<typeof loginSchema>) => {
+    initiateEmailSignIn(auth, values.email, values.password);
+    toast({
+      title: 'Logging in...',
+      description: 'You will be redirected shortly.',
+    });
+  };
+
   return (
     <div className="w-full lg:grid lg:min-h-[calc(100vh-8rem)] lg:grid-cols-2 xl:min-h-[calc(100vh-8rem)]">
       <div className="flex items-center justify-center py-12">
@@ -33,31 +78,53 @@ export default function LoginPage() {
             </p>
           </div>
           <Card>
-            <CardContent className="grid gap-4 pt-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    href="/forgot-password"
-                    className="ml-auto inline-block text-sm underline"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
-                <Input id="password" type="password" required />
-              </div>
-              <Button type="submit" className="w-full" asChild>
-                <Link href="/dashboard">Login</Link>
-              </Button>
+            <CardContent className="pt-6">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label htmlFor="email">Email</Label>
+                        <FormControl>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="m@example.com"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center">
+                            <Label htmlFor="password">Password</Label>
+                            <Link
+                                href="/forgot-password"
+                                className="ml-auto inline-block text-sm underline"
+                            >
+                                Forgot your password?
+                            </Link>
+                        </div>
+                        <FormControl>
+                            <Input id="password" type="password" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                    Login
+                  </Button>
+                </form>
+              </Form>
             </CardContent>
           </Card>
           <div className="mt-4 text-center text-sm">

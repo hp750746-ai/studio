@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CreditCard, Package, User } from 'lucide-react';
+import { CreditCard, Package, User as UserIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,6 +15,7 @@ import type { CartItem } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useUser } from '@/firebase';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -25,6 +26,7 @@ const checkoutSchema = z.object({
 export default function CheckoutPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const { user, isUserLoading } = useUser();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isClient, setIsClient] = useState(false);
 
@@ -45,6 +47,12 @@ export default function CheckoutPage() {
       phone: '',
     }
   });
+
+  useEffect(() => {
+    if(user) {
+        form.setValue('name', user.displayName || '');
+    }
+}, [user, form]);
 
   const getSubtotal = () => {
     return cartItems.reduce((total, item) => {
@@ -68,7 +76,7 @@ export default function CheckoutPage() {
     router.push('/checkout/success');
   };
 
-  if (!isClient) {
+  if (!isClient || isUserLoading) {
       return null;
   }
 
@@ -90,7 +98,7 @@ export default function CheckoutPage() {
               <div className='space-y-8'>
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><User /> Shipping Information</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><UserIcon /> Shipping Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <FormField

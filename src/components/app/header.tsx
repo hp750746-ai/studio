@@ -13,8 +13,10 @@ import {
   Sparkles,
   ShoppingCart,
   Upload,
+  LogOut,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { signOut } from 'firebase/auth';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +29,17 @@ import {
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import type { CartItem } from '@/lib/types';
+import { useUser, useAuth } from '@/firebase';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+
 
 const navItems = [
   { href: '/store', label: 'Medicines', icon: Pill },
@@ -41,6 +54,8 @@ export default function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
 
   useEffect(() => {
     const updateCartCount = () => {
@@ -69,6 +84,10 @@ export default function Header() {
     };
   }, []);
 
+  const handleLogout = () => {
+    signOut(auth);
+  };
+  
   const NavLink = ({
     href,
     label,
@@ -129,12 +148,48 @@ export default function Header() {
               <span className="sr-only">Shopping Cart</span>
             </Link>
           </Button>
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/login">
-              <User className="h-5 w-5" />
-              <span className="sr-only">User Profile</span>
-            </Link>
-          </Button>
+
+          {isUserLoading ? (
+            <User className="h-5 w-5 animate-pulse" />
+          ) : user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? 'User'} />
+                    <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.displayName || 'User'}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard"><User className="mr-2 h-4 w-4" />Dashboard</Link>
+                </DropdownMenuItem>
+                 <DropdownMenuItem asChild>
+                  <Link href="/dashboard/profile"><User className="mr-2 h-4 w-4" />My Profile</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button asChild>
+                <Link href="/login">Login</Link>
+            </Button>
+          )}
+
 
           <div className="md:hidden">
             <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -167,12 +222,21 @@ export default function Header() {
                             )}
                         </Link>
                      </Button>
-                     <Button className="w-full" asChild>
-                        <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                            <User className="mr-2 h-5 w-5" />
-                            Login
-                        </Link>
-                     </Button>
+                     {user ? (
+                        <Button className="w-full" asChild>
+                            <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                                <User className="mr-2 h-5 w-5" />
+                                Dashboard
+                            </Link>
+                        </Button>
+                     ) : (
+                        <Button className="w-full" asChild>
+                            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                                <User className="mr-2 h-5 w-5" />
+                                Login
+                            </Link>
+                        </Button>
+                     )}
                   </div>
                 </nav>
               </SheetContent>
