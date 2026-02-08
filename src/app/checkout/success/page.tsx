@@ -18,10 +18,10 @@ export default function OrderSuccessPage() {
         </p>
         <div className="mt-8 flex justify-center gap-4">
             <Button asChild>
-                <Link href="/">Continue Shopping</Link>
+                <Link href="/store">Continue Shopping</Link>
             </Button>
             <Button variant="outline" asChild>
-                <Link href="/dashboard">Go to Dashboard</Link>
+                <Link href="/dashboard/orders">Track Your Order</Link>
             </Button>
         </div>
     </div>

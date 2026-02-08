@@ -41,3 +41,27 @@ export type WellnessArticle = {
 export type CartItem = Medicine & {
   quantity: number;
 };
+
+export type Order = {
+    id: string;
+    userAccountId: string;
+    orderDate: {
+        seconds: number;
+        nanoseconds: number;
+    };
+    deliveryAddress: string;
+    totalAmount: number;
+    status: string;
+    itemCount: number;
+};
+
+export type OrderItem = {
+    id: string;
+    orderId: string;
+    medicineId: string;
+    name: string;
+    quantity: number;
+    price: number;
+    image: string;
+    category: string;
+};

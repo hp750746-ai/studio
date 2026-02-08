@@ -1,6 +1,6 @@
 'use client';
 
-import { FileText, Beaker, Users, StickyNote, PlusCircle, UserCircle } from 'lucide-react';
+import { FileText, Beaker, Users, StickyNote, PlusCircle, UserCircle, Package } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { useUser } from '@/firebase';
@@ -9,12 +9,12 @@ import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const dashboardItems = [
+    { title: 'My Orders', icon: Package, description: 'Track your past and current orders.', href: '/dashboard/orders' },
     { title: 'My Prescriptions', icon: FileText, description: 'View and upload your prescriptions.', href: '/dashboard/prescriptions' },
     { title: 'Test Reports', icon: Beaker, description: 'Access all your lab test reports.', href: '/dashboard/reports' },
     { title: 'Family Members', icon: Users, description: 'Manage health profiles for your family.', href: '/dashboard/family' },
     { title: 'Doctor Notes', icon: StickyNote, description: 'Review notes from your consultations.', href: '/dashboard/notes' },
     { title: 'My Profile', icon: UserCircle, description: 'Update your personal information.', href: '/dashboard/profile' },
-    { title: 'Add New Record', icon: PlusCircle, description: 'Upload a new health document.', href: '/order-medicines' },
 ];
 
 export default function DashboardPage() {
