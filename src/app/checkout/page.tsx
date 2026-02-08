@@ -16,7 +16,7 @@ import type { CartItem } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const checkoutSchema = z.object({
@@ -143,7 +143,12 @@ export default function CheckoutPage() {
         router.push('/checkout/success');
       })
       .catch((error) => {
-        console.error("Order placement failed:", error);
+        const permissionError = new FirestorePermissionError({
+          path: orderRef.path,
+          operation: 'write',
+          requestResourceData: orderData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
         toast({
           variant: "destructive",
           title: "Order Failed",
