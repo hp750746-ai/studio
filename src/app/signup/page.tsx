@@ -55,7 +55,7 @@ export default function SignupPage() {
     }, [user, router]);
 
     const onSubmit = (values: z.infer<typeof signupSchema>) => {
-        initiateEmailSignUp(auth, values.email, values.password);
+        initiateEmailSignUp(auth, values.email, values.password, values.fullName);
         toast({
             title: 'Account created!',
             description: "We're redirecting you to your dashboard.",
