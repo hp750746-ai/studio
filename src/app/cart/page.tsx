@@ -156,7 +156,9 @@ export default function CartPage() {
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button className="w-full" onClick={() => toast({title: "This is a demo and checkout is not implemented."})}>Proceed to Checkout</Button>
+                        <Button className="w-full" asChild>
+                            <Link href="/checkout">Proceed to Checkout</Link>
+                        </Button>
                     </CardFooter>
                 </Card>
             </div>
