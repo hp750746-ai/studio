@@ -89,7 +89,7 @@ export default function OrdersPage() {
                                 Placed on: {order.orderDate ? format(new Date(order.orderDate.seconds * 1000), 'PPP') : 'Date pending...'}
                             </p>
                             <div className="mt-2 flex items-center gap-2">
-                                <span className="font-bold text-lg">₹{order.totalAmount.toFixed(2)}</span>
+                                <span className="font-bold text-lg">INR {order.totalAmount.toFixed(2)}</span>
                                 <Badge variant={order.status === 'Placed' ? 'default' : 'secondary'}>{order.status}</Badge>
                             </div>
                         </div>

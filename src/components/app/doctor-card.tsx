@@ -47,7 +47,7 @@ export default function DoctorCard({ doctor, className }: DoctorCardProps) {
         <CardDescription>{doctor.specialty}</CardDescription>
         <p className="text-sm text-muted-foreground mt-2">{doctor.experience} years of experience</p>
         <div className="flex items-center gap-2 mt-4">
-          <p className="text-lg font-bold text-foreground">₹{doctor.fees}</p>
+          <p className="text-lg font-bold text-foreground">INR {doctor.fees}</p>
           <p className="text-sm text-muted-foreground">per consultation</p>
         </div>
         <div className="flex items-center gap-2 mt-2">

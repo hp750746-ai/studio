@@ -108,9 +108,9 @@ export default function CartPage() {
                                         <h3 className="font-semibold">{item.name}</h3>
                                         <p className="text-sm text-muted-foreground">{item.category}</p>
                                         <div className="flex items-baseline justify-center sm:justify-start gap-2 mt-1">
-                                            <p className="font-bold text-foreground">₹{discountedPrice.toFixed(2)}</p>
+                                            <p className="font-bold text-foreground">INR {discountedPrice.toFixed(2)}</p>
                                             {item.discount && (
-                                                <p className="text-sm text-muted-foreground line-through">₹{item.price.toFixed(2)}</p>
+                                                <p className="text-sm text-muted-foreground line-through">INR {item.price.toFixed(2)}</p>
                                             )}
                                         </div>
                                     </div>
@@ -120,7 +120,7 @@ export default function CartPage() {
                                         <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleQuantityChange(item.id, 1)}>+</Button>
                                     </div>
                                     <div className='flex-shrink-0'>
-                                        <p className="font-bold w-20 text-center">₹{(discountedPrice * item.quantity).toFixed(2)}</p>
+                                        <p className="font-bold w-20 text-center">INR {(discountedPrice * item.quantity).toFixed(2)}</p>
                                     </div>
                                     <div className="flex-shrink-0">
                                         <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(item.id)}>
@@ -143,16 +143,16 @@ export default function CartPage() {
                     <CardContent className="space-y-4">
                         <div className="flex justify-between text-muted-foreground">
                             <span>Subtotal</span>
-                            <span>₹{subtotal.toFixed(2)}</span>
+                            <span>INR {subtotal.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-muted-foreground">
                             <span>Delivery Fee</span>
-                            <span>₹{deliveryFee.toFixed(2)}</span>
+                            <span>INR {deliveryFee.toFixed(2)}</span>
                         </div>
                         <Separator />
                         <div className="flex justify-between font-bold text-lg">
                             <span>Total Amount</span>
-                            <span>₹{total.toFixed(2)}</span>
+                            <span>INR {total.toFixed(2)}</span>
                         </div>
                     </CardContent>
                     <CardFooter>

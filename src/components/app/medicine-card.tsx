@@ -71,9 +71,9 @@ export default function MedicineCard({ medicine, className }: MedicineCardProps)
       <CardContent className="p-3 flex-grow">
         <CardTitle className="text-sm font-medium h-10 leading-tight line-clamp-2">{medicine.name}</CardTitle>
         <div className="flex items-baseline gap-2 mt-2">
-          <p className="text-lg font-bold text-foreground">₹{discountedPrice.toFixed(2)}</p>
+          <p className="text-lg font-bold text-foreground">INR {discountedPrice.toFixed(2)}</p>
           {medicine.discount && (
-            <p className="text-sm text-muted-foreground line-through">₹{medicine.price.toFixed(2)}</p>
+            <p className="text-sm text-muted-foreground line-through">INR {medicine.price.toFixed(2)}</p>
           )}
         </div>
       </CardContent>

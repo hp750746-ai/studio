@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection } from 'firebase/firestore';
-import { Package, ArrowLeft, Home, Calendar, IndianRupee, Hash, Truck } from 'lucide-react';
+import { Package, ArrowLeft, Home, Calendar, Hash, Truck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -109,7 +109,7 @@ export default function OrderDetailsPage() {
                                             <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                                         </div>
                                         <div>
-                                            <p className="font-semibold">₹{(item.price * item.quantity).toFixed(2)}</p>
+                                            <p className="font-semibold">INR {(item.price * item.quantity).toFixed(2)}</p>
                                         </div>
                                      </li>
                                    )
@@ -152,16 +152,16 @@ export default function OrderDetailsPage() {
                             <Separator />
                             <div className="flex items-center justify-between text-muted-foreground">
                                 <div className="flex items-center gap-2"><Hash className="h-4 w-4" /> Items ({order.itemCount})</div>
-                                <span>₹{(order.totalAmount - 50).toFixed(2)}</span>
+                                <span>INR {(order.totalAmount - 50).toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-muted-foreground">
                                 <div className="flex items-center gap-2"><Truck className="h-4 w-4" /> Delivery</div>
-                                <span>₹50.00</span>
+                                <span>INR 50.00</span>
                             </div>
                             <Separator />
                             <div className="flex justify-between font-bold text-lg">
-                                <div className="flex items-center gap-2"><IndianRupee className="h-5 w-5" /> Total</div>
-                                <span>₹{order.totalAmount.toFixed(2)}</span>
+                                <div className="flex items-center gap-2">Total</div>
+                                <span>INR {order.totalAmount.toFixed(2)}</span>
                             </div>
                         </CardContent>
                     </Card>

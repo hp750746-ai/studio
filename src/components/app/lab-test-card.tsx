@@ -56,7 +56,7 @@ export default function LabTestCard({ test, className }: LabTestCardProps) {
         </div>
       </CardContent>
       <CardFooter className="flex justify-between items-center bg-muted/50 p-4">
-        <p className="text-xl font-bold text-primary">₹{test.price}</p>
+        <p className="text-xl font-bold text-primary">INR {test.price}</p>
         <Button asChild>
             <Link href={`/lab-tests/${test.id}`}>Book Now</Link>
         </Button>
