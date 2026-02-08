@@ -8,12 +8,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-
-export const metadata = {
-  title: 'My Dashboard | HealthLinke',
-  description: 'Manage your health records, prescriptions, test reports, and more.',
-};
-
 const dashboardItems = [
     { title: 'My Prescriptions', icon: FileText, description: 'View and upload your prescriptions.', href: '/dashboard/prescriptions' },
     { title: 'Test Reports', icon: Beaker, description: 'Access all your lab test reports.', href: '/dashboard/reports' },
