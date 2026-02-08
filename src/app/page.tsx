@@ -33,14 +33,17 @@ import MedicineCard from '@/components/app/medicine-card';
 import { doctors, medicines, healthTips } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const heroImage = PlaceHolderImages.find(img => img.id === 'hero-1');
 
 export default function Home() {
   const [healthTip, setHealthTip] = useState('');
   const { toast } = useToast();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
     setHealthTip(healthTips[Math.floor(Math.random() * healthTips.length)]);
   }, []);
 
@@ -112,7 +115,11 @@ export default function Home() {
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-lg text-foreground/90">{healthTip}</p>
+            {isClient && healthTip ? (
+              <p className="text-lg text-foreground/90">{healthTip}</p>
+            ) : (
+              <Skeleton className="h-6 w-3/4" />
+            )}
           </CardContent>
         </Card>
       </section>
