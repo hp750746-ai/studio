@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -18,7 +19,8 @@ import { Label } from '@/components/ui/label';
 import { useAuth, useUser } from '@/firebase';
 import { initiateEmailSignUp } from '@/firebase/non-blocking-login';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { FirebaseError } from 'firebase/app';
 import {
   Form,
   FormControl,
@@ -38,6 +40,7 @@ export default function SignupPage() {
     const { user } = useUser();
     const router = useRouter();
     const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<z.infer<typeof signupSchema>>({
         resolver: zodResolver(signupSchema),
@@ -55,11 +58,29 @@ export default function SignupPage() {
     }, [user, router]);
 
     const onSubmit = (values: z.infer<typeof signupSchema>) => {
-        initiateEmailSignUp(auth, values.email, values.password, values.fullName);
-        toast({
-            title: 'Account created!',
-            description: "We're redirecting you to your dashboard.",
-        });
+        setIsSubmitting(true);
+
+        const onSuccess = () => {
+            toast({
+                title: 'Account created!',
+                description: "We're redirecting you to your dashboard.",
+            });
+        };
+
+        const onError = (error: FirebaseError) => {
+            let description = "An unexpected error occurred. Please try again.";
+            if (error.code === 'auth/email-already-in-use') {
+                description = "This email is already in use. Please try another one or log in.";
+            }
+            toast({
+                variant: "destructive",
+                title: 'Sign-up Failed',
+                description: description,
+            });
+            setIsSubmitting(false);
+        };
+
+        initiateEmailSignUp(auth, values.email, values.password, values.fullName, onSuccess, onError);
     };
 
   return (
@@ -112,7 +133,8 @@ export default function SignupPage() {
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Create an account
                     </Button>
                 </form>

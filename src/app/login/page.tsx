@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { LockKeyhole } from 'lucide-react';
+import { LockKeyhole, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -20,7 +20,8 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useAuth, useUser } from '@/firebase';
 import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { FirebaseError } from 'firebase/app';
 import {
   Form,
   FormControl,
@@ -42,6 +43,7 @@ export default function LoginPage() {
   const { user } = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -59,11 +61,29 @@ export default function LoginPage() {
 
 
   const onSubmit = (values: z.infer<typeof loginSchema>) => {
-    initiateEmailSignIn(auth, values.email, values.password);
-    toast({
-      title: 'Logging in...',
-      description: 'You will be redirected shortly.',
-    });
+    setIsSubmitting(true);
+    
+    const onSuccess = () => {
+      toast({
+        title: 'Logged in successfully!',
+        description: 'You will be redirected shortly.',
+      });
+    };
+
+    const onError = (error: FirebaseError) => {
+      let description = "An unexpected error occurred. Please try again.";
+      if (error.code === 'auth/invalid-credential') {
+          description = "Invalid email or password. Please check your credentials and try again.";
+      }
+      toast({
+          variant: "destructive",
+          title: 'Login Failed',
+          description: description,
+      });
+      setIsSubmitting(false);
+    };
+    
+    initiateEmailSignIn(auth, values.email, values.password, onSuccess, onError);
   };
 
   return (
@@ -120,7 +140,8 @@ export default function LoginPage() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Login
                   </Button>
                 </form>
