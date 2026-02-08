@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { Package, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,7 +26,7 @@ export default function OrdersPage() {
 
   const ordersQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return collection(firestore, `users/${user.uid}/orders`);
+    return query(collection(firestore, `users/${user.uid}/orders`), orderBy('orderDate', 'desc'));
   }, [user, firestore]);
 
   const { data: orders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
@@ -79,14 +79,14 @@ export default function OrdersPage() {
             </div>
           ) : orders && orders.length > 0 ? (
             <ul className="divide-y">
-              {orders.sort((a,b) => b.orderDate.seconds - a.orderDate.seconds).map((order) => (
+              {orders.map((order) => (
                 <li key={order.id} className="py-4">
                   <Link href={`/dashboard/orders/${order.id}`} className="block hover:bg-muted/50 p-4 rounded-lg transition-colors">
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                         <div className="flex-grow">
                             <p className="text-sm font-semibold text-primary">Order ID: {order.id}</p>
                             <p className="text-sm text-muted-foreground">
-                                Placed on: {format(new Date(order.orderDate.seconds * 1000), 'PPP')}
+                                Placed on: {order.orderDate ? format(new Date(order.orderDate.seconds * 1000), 'PPP') : 'Date pending...'}
                             </p>
                             <div className="mt-2 flex items-center gap-2">
                                 <span className="font-bold text-lg">₹{order.totalAmount.toFixed(2)}</span>

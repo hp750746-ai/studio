@@ -146,7 +146,7 @@ export default function OrderDetailsPage() {
                                 <Calendar className="h-5 w-5 text-muted-foreground mt-1" />
                                 <div>
                                     <p className="font-semibold">Order Date</p>
-                                    <p className="text-sm text-muted-foreground">{format(new Date(order.orderDate.seconds * 1000), 'PPp')}</p>
+                                    <p className="text-sm text-muted-foreground">{order.orderDate ? format(new Date(order.orderDate.seconds * 1000), 'PPp') : 'Date pending...'}</p>
                                 </div>
                             </div>
                             <Separator />
