@@ -145,6 +145,12 @@
       "imageHint": "keys security"
     },
     {
+      "id": "signup-hero",
+      "description": "A person starting a new health journey",
+      "imageUrl": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxmaXRuZXNzJTIwc3RhcnR8ZW58MHx8fHwxNzcxNTk5NjU0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fitness start"
+    },
+    {
       "id": "medicine-10",
       "description": "A strip of antibiotic pills",
       "imageUrl": "https://images.unsplash.com/photo-1626870884221-5d1f44f61bbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YW50aWJpb3RpYyUyMHBpbGxzfGVufDB8fHx8MTc3MDM0NzgxMXww&ixlib=rb-4.1.0&q=80&w=1080",

@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -28,12 +29,15 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const signupSchema = z.object({
     fullName: z.string().min(2, { message: 'Full name must be at least 2 characters.' }),
     email: z.string().email({ message: 'Please enter a valid email.' }),
     password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
   });
+
+const signupImage = PlaceHolderImages.find(p => p.id === 'signup-hero');
 
 export default function SignupPage() {
     const auth = useAuth();
@@ -84,13 +88,15 @@ export default function SignupPage() {
     };
 
   return (
-    <div className="flex items-center justify-center py-12 min-h-[calc(100vh-8rem)]">
-        <Card className="mx-auto max-w-sm">
-            <CardHeader>
-            <CardTitle className="text-2xl font-headline text-primary">Sign Up</CardTitle>
-            <CardDescription>
-                Enter your information to create an account
-            </CardDescription>
+    <div className="w-full lg:grid lg:min-h-[calc(100vh-8rem)] lg:grid-cols-2 xl:min-h-[calc(100vh-8rem)]">
+      <div className="flex items-center justify-center py-12">
+        <Card className="mx-auto w-[350px] lg:w-[400px]">
+            <CardHeader className="text-center">
+                <UserPlus className="h-12 w-12 mx-auto text-primary"/>
+                <CardTitle className="text-3xl font-bold font-headline text-primary">Sign Up</CardTitle>
+                <CardDescription>
+                    Enter your information to create an account
+                </CardDescription>
             </CardHeader>
             <CardContent>
             <Form {...form}>
@@ -147,6 +153,18 @@ export default function SignupPage() {
             </div>
             </CardContent>
         </Card>
+      </div>
+      <div className="hidden bg-muted lg:block relative">
+        {signupImage && (
+            <Image
+              src={signupImage.imageUrl}
+              alt="Person starting a new health journey"
+              fill
+              className="object-cover dark:brightness-[0.2] dark:grayscale"
+              data-ai-hint={signupImage.imageHint}
+            />
+        )}
+      </div>
     </div>
   );
 }
