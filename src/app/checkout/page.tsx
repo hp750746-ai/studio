@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CreditCard, Package, User as UserIcon } from 'lucide-react';
+import { CreditCard, Loader2, Package, User as UserIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { writeBatch, doc, collection, serverTimestamp } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -15,7 +16,7 @@ import type { CartItem } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const checkoutSchema = z.object({
@@ -28,23 +29,34 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const router = useRouter();
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
     const itemsFromStorage: CartItem[] = JSON.parse(localStorage.getItem('cart') || '[]' );
     if (itemsFromStorage.length === 0) {
-      router.push('/cart');
+      toast({
+        title: 'Your cart is empty',
+        description: 'Redirecting to store...',
+      });
+      router.push('/store');
     }
     setCartItems(itemsFromStorage);
-  }, [router]);
+  }, [router, toast]);
   
   useEffect(() => {
     if (!isUserLoading && !user) {
+      toast({
+        title: 'Please Login',
+        description: 'You need to be logged in to checkout.',
+        variant: 'destructive',
+      });
       router.push('/login');
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, router, toast]);
 
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
@@ -56,10 +68,10 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    if(user) {
-        form.setValue('name', user.displayName || '');
+    if(user?.displayName) {
+        form.setValue('name', user.displayName);
     }
-}, [user, form]);
+  }, [user, form]);
 
   const getSubtotal = () => {
     return cartItems.reduce((total, item) => {
@@ -73,14 +85,74 @@ export default function CheckoutPage() {
   const total = subtotal + deliveryFee;
 
   const handlePlaceOrder = (values: z.infer<typeof checkoutSchema>) => {
-    console.log('Order placed with values:', values);
-    localStorage.removeItem('cart');
-    window.dispatchEvent(new Event('cart-updated'));
-    toast({
-        title: "Order Placed Successfully!",
-        description: "Thank you for your purchase. You will receive a confirmation shortly."
+    if (!user || !firestore) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Error",
+        description: "You must be logged in to place an order.",
+      });
+      return;
+    }
+     if (cartItems.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Empty Cart",
+        description: "You cannot place an order with an empty cart.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const batch = writeBatch(firestore);
+    const orderRef = doc(collection(firestore, `users/${user.uid}/orders`));
+
+    cartItems.forEach(item => {
+      const discountedPrice = item.discount ? item.price - (item.price * item.discount) / 100 : item.price;
+      const orderItemRef = doc(collection(firestore, orderRef.path, 'orderItems'));
+      batch.set(orderItemRef, {
+        orderId: orderRef.id,
+        medicineId: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        price: discountedPrice,
+        image: item.image,
+        category: item.category,
+      });
     });
-    router.push('/checkout/success');
+
+    const orderData = {
+      userAccountId: user.uid,
+      orderDate: serverTimestamp(),
+      deliveryAddress: `${values.name}\n${values.address}\n${values.phone}`,
+      totalAmount: total,
+      status: 'Placed',
+      itemCount: cartItems.reduce((acc, item) => acc + item.quantity, 0),
+    };
+
+    batch.set(orderRef, orderData);
+
+    batch.commit()
+      .then(() => {
+        localStorage.removeItem('cart');
+        window.dispatchEvent(new Event('cart-updated'));
+        toast({
+            title: "Order Placed Successfully!",
+            description: "Thank you for your purchase. You will receive a confirmation shortly."
+        });
+        router.push('/checkout/success');
+      })
+      .catch((error) => {
+        console.error("Order placement failed:", error);
+        toast({
+          variant: "destructive",
+          title: "Order Failed",
+          description: "There was an error placing your order. Please try again.",
+        });
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
   };
 
   if (!isClient || isUserLoading || !user) {
@@ -197,7 +269,10 @@ export default function CheckoutPage() {
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button type="submit" className="w-full">Place Order</Button>
+                        <Button type="submit" className="w-full" disabled={isSubmitting || cartItems.length === 0}>
+                           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                           Place Order
+                        </Button>
                     </CardFooter>
                 </Card>
             </div>
