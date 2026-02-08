@@ -1,0 +1,264 @@
+/**
+ * Core Philosophy: This ruleset enforces a strict user-ownership model for all
+ * personal and sensitive data, while providing public read access to global
+ * catalog data like medicines and doctors. The primary security goal is to
+ * isolate each user's data within their own accessible data tree, preventing
+ * any cross-user data access.
+ *
+ * Data Structure: The data is hierarchically organized. All user-specific data,
+ * including health records, orders, and personal information, is nested under
+ * the `/users/{userId}` path. This path-based ownership is the cornerstone of
+ * the security model. Publicly consumable data, such as lists of medicines,
+ * doctors, and lab tests, resides in separate top-level collections.
+ *
+ * Key Security Decisions:
+ * - Strict User Scoping: A user can only access documents located under their
+ *   own user ID path (e.g., `/users/THEIR_OWN_UID/...`).
+ * - No User Enumeration: Listing the top-level `/users` collection is explicitly
+ *   disallowed to protect user privacy.
+ * - Public Catalogs are Read-Only: Collections like `/medicines`, `/doctors`,
+ *   and `/labTests` are readable by anyone but cannot be modified by clients.
+ *   This assumes they are populated and managed by a trusted backend service.
+ * - Self-Service Profile Creation: A newly authenticated user is permitted to
+ *   create their own profile document in the `/users` collection.
+ *
+ * Denormalization for Authorization: The rules heavily leverage path-based
+ * ownership. By placing a user's UID in the document path (e.g.,
+ * `/users/{userId}/orders/{orderId}`), we can write simple, fast, and secure
+ * rules without needing costly `get()` calls to other documents to verify
+ * ownership. Relational integrity is maintained by ensuring that new documents
+ * created within a user's data tree contain a matching owner ID field.
+ *
+ * Structural Segregation: The separation of private user data (e.g.,
+ * `/users/{userId}/healthRecords`) from public data (`/medicines`) is a core
+ * design choice. This makes list operations inherently secure, as a query for
+ * a user's health records is naturally scoped by the path and cannot accidentally
+ * leak data from other users.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helper Functions
+    // -------------------------------------------------------------------------
+
+    /**
+     * Checks if a user is authenticated via Firebase Auth.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the authenticated user's UID matches the provided resource owner's UID.
+     * This is the fundamental check for user-owned data.
+     * @param userId The UID of the document owner, typically from the path.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Confirms ownership on an existing document.
+     * Crucial for state-changing operations like update and delete to prevent
+     * acting on non-existent data.
+     * @param userId The UID of the document owner.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * Validates that a user is creating their own root user document and that
+     * the document's internal `id` field matches their auth UID.
+     * @param userId The user's UID from the path.
+     */
+    function isCreatingOwnUserDocument(userId) {
+      return isOwner(userId) && request.resource.data.id == userId;
+    }
+
+    /**
+     * Enforces immutability of the internal `id` field on a user document
+     * during an update operation.
+     */
+    function isUpdatingOwnImmutableUserDocument() {
+      return request.resource.data.id == resource.data.id;
+    }
+    
+    /**
+     * On create, validates that a subcollection document's linking field
+     * (e.g., `userAccountId`) correctly points to the owner in the path.
+     * @param userId The UID of the owner from the path.
+     */
+    function isCreatingOwnedSubdocument(userId) {
+      return request.resource.data.userAccountId == userId;
+    }
+
+    /**
+     * On update, ensures the ownership link on a subcollection document
+     * remains unchanged.
+     */
+    function isUpdatingOwnedSubdocument() {
+      return request.resource.data.userAccountId == resource.data.userAccountId;
+    }
+
+    // -------------------------------------------------------------------------
+    // User Data
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description A user's own account information document.
+     * @path /users/{userId}
+     * @allow (create) An authenticated user creating their own document.
+     * @deny (get) A user trying to read another user's document.
+     * @principle Restricts access to a user's own data tree and prevents user enumeration.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isCreatingOwnUserDocument(userId);
+      allow update: if isExistingOwner(userId) && isUpdatingOwnImmutableUserDocument();
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description A user's private health records.
+     * @path /users/{userAccountId}/healthRecords/{healthRecordId}
+     * @allow (create) An authenticated user creating a health record for themselves.
+     * @deny (list) A user trying to list another user's health records.
+     * @principle Enforces strict ownership for all operations on sensitive user subcollections.
+     */
+    match /users/{userAccountId}/healthRecords/{healthRecordId} {
+      allow get: if isOwner(userAccountId);
+      allow list: if isOwner(userAccountId);
+      allow create: if isOwner(userAccountId) && isCreatingOwnedSubdocument(userAccountId);
+      allow update: if isExistingOwner(userAccountId) && isUpdatingOwnedSubdocument();
+      allow delete: if isExistingOwner(userAccountId);
+    }
+
+    /**
+     * @description Prescriptions nested under a user's health record.
+     * @path /users/{userAccountId}/healthRecords/{healthRecordId}/prescriptions/{prescriptionId}
+     * @allow (get) An authenticated user reading one of their own prescriptions.
+     * @deny (create) A user trying to create a prescription in another user's record.
+     * @principle Inherits ownership from the parent path (`userAccountId`).
+     */
+    match /users/{userAccountId}/healthRecords/{healthRecordId}/prescriptions/{prescriptionId} {
+      allow get: if isOwner(userAccountId);
+      allow list: if isOwner(userAccountId);
+      allow create: if isOwner(userAccountId);
+      allow update: if isExistingOwner(userAccountId);
+      allow delete: if isExistingOwner(userAccountId);
+    }
+
+    /**
+     * @description Test reports nested under a user's health record.
+     * @path /users/{userAccountId}/healthRecords/{healthRecordId}/testReports/{testReportId}
+     * @allow (get) An authenticated user reading one of their own test reports.
+     * @deny (update) A user trying to update a test report in another user's record.
+     * @principle Inherits ownership from the parent path (`userAccountId`).
+     */
+    match /users/{userAccountId}/healthRecords/{healthRecordId}/testReports/{testReportId} {
+      allow get: if isOwner(userAccountId);
+      allow list: if isOwner(userAccountId);
+      allow create: if isOwner(userAccountId);
+      allow update: if isExistingOwner(userAccountId);
+      allow delete: if isExistingOwner(userAccountId);
+    }
+
+    /**
+     * @description Doctor notes nested under a user's health record.
+     * @path /users/{userAccountId}/healthRecords/{healthRecordId}/doctorNotes/{doctorNoteId}
+     * @allow (get) An authenticated user reading one of their own doctor notes.
+     * @deny (delete) A user trying to delete a note from another user's record.
+     * @principle Inherits ownership from the parent path (`userAccountId`).
+     */
+    match /users/{userAccountId}/healthRecords/{healthRecordId}/doctorNotes/{doctorNoteId} {
+      allow get: if isOwner(userAccountId);
+      allow list: if isOwner(userAccountId);
+      allow create: if isOwner(userAccountId);
+      allow update: if isExistingOwner(userAccountId);
+      allow delete: if isExistingOwner(userAccountId);
+    }
+
+    /**
+     * @description A user's private order history.
+     * @path /users/{userAccountId}/orders/{orderId}
+     * @allow (create) An authenticated user creating an order for themselves.
+     * @deny (list) A user trying to list another user's orders.
+     * @principle Enforces strict ownership for all operations on user subcollections.
+     */
+    match /users/{userAccountId}/orders/{orderId} {
+      allow get: if isOwner(userAccountId);
+      allow list: if isOwner(userAccountId);
+      allow create: if isOwner(userAccountId) && isCreatingOwnedSubdocument(userAccountId);
+      allow update: if isExistingOwner(userAccountId) && isUpdatingOwnedSubdocument();
+      allow delete: if isExistingOwner(userAccountId);
+    }
+
+    /**
+     * @description Items within a user's order.
+     * @path /users/{userAccountId}/orders/{orderId}/orderItems/{orderItemId}
+     * @allow (get) An authenticated user reading an item from one of their own orders.
+     * @deny (create) A user trying to add an item to another user's order.
+     * @principle Inherits ownership from the parent path (`userAccountId`).
+     */
+    match /users/{userAccountId}/orders/{orderId}/orderItems/{orderItemId} {
+      allow get: if isOwner(userAccountId);
+      allow list: if isOwner(userAccountId);
+      allow create: if isOwner(userAccountId);
+      allow update: if isExistingOwner(userAccountId);
+      allow delete: if isExistingOwner(userAccountId);
+    }
+    
+    // -------------------------------------------------------------------------
+    // Global Public Data (Read-Only for Clients)
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description Publicly readable catalog of medicines.
+     * @path /medicines/{medicineId}
+     * @allow (get) Any user, authenticated or not, reading a medicine's details.
+     * @deny (create) Any client attempting to create a new medicine entry.
+     * @principle Data is public-read, but write access is denied to prevent tampering. Assumes data is managed by a backend admin.
+     */
+    match /medicines/{medicineId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Publicly readable list of available doctors.
+     * @path /doctors/{doctorId}
+     * @allow (get) Any user, authenticated or not, reading a doctor's profile.
+     * @deny (update) Any client attempting to update a doctor's profile.
+     * @principle Data is public-read, but write access is denied to prevent tampering. Assumes data is managed by a backend admin.
+     */
+    match /doctors/{doctorId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Publicly readable catalog of available lab tests.
+     * @path /labTests/{labTestId}
+     * @allow (get) Any user, authenticated or not, reading a lab test's details.
+     * @deny (delete) Any client attempting to delete a lab test entry.
+     * @principle Data is public-read, but write access is denied to prevent tampering. Assumes data is managed by a backend admin.
+     */
+    match /labTests/{labTestId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}

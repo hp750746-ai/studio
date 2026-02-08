@@ -1,0 +1,616 @@
+{
+  "entities": {
+    "UserAccount": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserAccount",
+      "type": "object",
+      "description": "Stores user account information, excluding authentication credentials.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user account."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Phone number of the user."
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "description": "Date of birth of the user.",
+          "format": "date-time"
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the user."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the user account was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp of when the user account was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email"
+      ]
+    },
+    "Medicine": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Medicine",
+      "type": "object",
+      "description": "Represents a medicine available in the online store.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the medicine."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the medicine."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the medicine."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the medicine (e.g., Tablet, Syrup)."
+        },
+        "price": {
+          "type": "number",
+          "description": "Price of the medicine."
+        },
+        "discount": {
+          "type": "number",
+          "description": "Discount percentage on the medicine."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the medicine image.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "category",
+        "price"
+      ]
+    },
+    "Doctor": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Doctor",
+      "type": "object",
+      "description": "Represents a doctor available for consultation.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the doctor."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the doctor."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the doctor."
+        },
+        "degree": {
+          "type": "string",
+          "description": "Degree of the doctor."
+        },
+        "experience": {
+          "type": "number",
+          "description": "Years of experience of the doctor."
+        },
+        "fees": {
+          "type": "number",
+          "description": "Consultation fees of the doctor."
+        },
+        "consultationType": {
+          "type": "string",
+          "description": "Type of consultation offered (e.g., Chat, Audio, Video)."
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "URL of the doctor's photo.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "degree",
+        "experience",
+        "fees"
+      ]
+    },
+    "LabTest": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "LabTest",
+      "type": "object",
+      "description": "Represents a lab test available for booking.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the lab test."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the lab test."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the lab test."
+        },
+        "price": {
+          "type": "number",
+          "description": "Price of the lab test."
+        },
+        "homeSampleCollection": {
+          "type": "boolean",
+          "description": "Indicates if home sample collection is available for this test."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "price"
+      ]
+    },
+    "PatientHealthRecord": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PatientHealthRecord",
+      "type": "object",
+      "description": "Represents a patient's health record, linking to prescriptions, reports, and notes.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the patient health record."
+        },
+        "userAccountId": {
+          "type": "string",
+          "description": "Reference to UserAccount. (Relationship: UserAccount 1:N PatientHealthRecord)"
+        },
+        "prescriptionIds": {
+          "type": "array",
+          "description": "References to Prescriptions. (Relationship: PatientHealthRecord 1:N Prescription)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "testReportIds": {
+          "type": "array",
+          "description": "References to TestReports. (Relationship: PatientHealthRecord 1:N TestReport)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "doctorNoteIds": {
+          "type": "array",
+          "description": "References to DoctorNotes. (Relationship: PatientHealthRecord 1:N DoctorNote)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userAccountId"
+      ]
+    },
+    "Prescription": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Prescription",
+      "type": "object",
+      "description": "Represents a prescription record.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the prescription."
+        },
+        "patientHealthRecordId": {
+          "type": "string",
+          "description": "Reference to PatientHealthRecord. (Relationship: PatientHealthRecord 1:N Prescription)"
+        },
+        "dateIssued": {
+          "type": "string",
+          "description": "Date the prescription was issued.",
+          "format": "date-time"
+        },
+        "prescribedMedicines": {
+          "type": "string",
+          "description": "Details of the medicines prescribed"
+        }
+      },
+      "required": [
+        "id",
+        "patientHealthRecordId",
+        "dateIssued"
+      ]
+    },
+    "TestReport": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TestReport",
+      "type": "object",
+      "description": "Represents a lab test report.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the test report."
+        },
+        "patientHealthRecordId": {
+          "type": "string",
+          "description": "Reference to PatientHealthRecord. (Relationship: PatientHealthRecord 1:N TestReport)"
+        },
+        "labTestId": {
+          "type": "string",
+          "description": "Reference to LabTest. (Relationship: LabTest 1:N TestReport)"
+        },
+        "reportDate": {
+          "type": "string",
+          "description": "Date the test report was generated.",
+          "format": "date-time"
+        },
+        "reportUrl": {
+          "type": "string",
+          "description": "URL to download the test report (PDF).",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "patientHealthRecordId",
+        "labTestId",
+        "reportDate",
+        "reportUrl"
+      ]
+    },
+    "DoctorNote": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DoctorNote",
+      "type": "object",
+      "description": "Represents a note or observation made by a doctor.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the doctor note."
+        },
+        "patientHealthRecordId": {
+          "type": "string",
+          "description": "Reference to PatientHealthRecord. (Relationship: PatientHealthRecord 1:N DoctorNote)"
+        },
+        "doctorId": {
+          "type": "string",
+          "description": "Reference to Doctor. (Relationship: Doctor 1:N DoctorNote)"
+        },
+        "noteDate": {
+          "type": "string",
+          "description": "Date the note was created.",
+          "format": "date-time"
+        },
+        "noteText": {
+          "type": "string",
+          "description": "Text content of the doctor's note."
+        }
+      },
+      "required": [
+        "id",
+        "patientHealthRecordId",
+        "doctorId",
+        "noteDate",
+        "noteText"
+      ]
+    },
+    "Order": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Order",
+      "type": "object",
+      "description": "Represents an order placed by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the order."
+        },
+        "userAccountId": {
+          "type": "string",
+          "description": "Reference to UserAccount. (Relationship: UserAccount 1:N Order)"
+        },
+        "orderDate": {
+          "type": "string",
+          "description": "Date the order was placed.",
+          "format": "date-time"
+        },
+        "deliveryAddress": {
+          "type": "string",
+          "description": "Delivery address for the order."
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Total amount of the order."
+        },
+        "orderItemIds": {
+          "type": "array",
+          "description": "References to OrderItems. (Relationship: Order 1:N OrderItem)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userAccountId",
+        "orderDate",
+        "deliveryAddress",
+        "totalAmount"
+      ]
+    },
+    "OrderItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OrderItem",
+      "type": "object",
+      "description": "Represents an item within an order.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the order item."
+        },
+        "orderId": {
+          "type": "string",
+          "description": "Reference to Order. (Relationship: Order 1:N OrderItem)"
+        },
+        "medicineId": {
+          "type": "string",
+          "description": "Reference to Medicine. (Relationship: Medicine 1:N OrderItem)"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Quantity of the medicine in the order item."
+        },
+        "price": {
+          "type": "number",
+          "description": "Price of the medicine in the order item."
+        }
+      },
+      "required": [
+        "id",
+        "orderId",
+        "medicineId",
+        "quantity",
+        "price"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserAccount",
+          "schema": {
+            "$ref": "#/backend/entities/UserAccount"
+          },
+          "description": "Stores user account information.  Path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/medicines/{medicineId}",
+        "definition": {
+          "entityName": "Medicine",
+          "schema": {
+            "$ref": "#/backend/entities/Medicine"
+          },
+          "description": "Stores information about medicines available in the store.",
+          "params": [
+            {
+              "name": "medicineId",
+              "description": "The unique identifier for the medicine."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/doctors/{doctorId}",
+        "definition": {
+          "entityName": "Doctor",
+          "schema": {
+            "$ref": "#/backend/entities/Doctor"
+          },
+          "description": "Stores information about doctors available for consultation.",
+          "params": [
+            {
+              "name": "doctorId",
+              "description": "The unique identifier for the doctor."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/labTests/{labTestId}",
+        "definition": {
+          "entityName": "LabTest",
+          "schema": {
+            "$ref": "#/backend/entities/LabTest"
+          },
+          "description": "Stores information about lab tests available for booking.",
+          "params": [
+            {
+              "name": "labTestId",
+              "description": "The unique identifier for the lab test."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userAccountId}/healthRecords/{healthRecordId}",
+        "definition": {
+          "entityName": "PatientHealthRecord",
+          "schema": {
+            "$ref": "#/backend/entities/PatientHealthRecord"
+          },
+          "description": "Stores patient health records specific to each user. Path-based ownership.",
+          "params": [
+            {
+              "name": "userAccountId",
+              "description": "The unique identifier for the user account."
+            },
+            {
+              "name": "healthRecordId",
+              "description": "The unique identifier for the health record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userAccountId}/healthRecords/{healthRecordId}/prescriptions/{prescriptionId}",
+        "definition": {
+          "entityName": "Prescription",
+          "schema": {
+            "$ref": "#/backend/entities/Prescription"
+          },
+          "description": "Stores prescription records associated with a patient health record. Path-based ownership.",
+          "params": [
+            {
+              "name": "userAccountId",
+              "description": "The unique identifier for the user account."
+            },
+            {
+              "name": "healthRecordId",
+              "description": "The unique identifier for the health record."
+            },
+            {
+              "name": "prescriptionId",
+              "description": "The unique identifier for the prescription."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userAccountId}/healthRecords/{healthRecordId}/testReports/{testReportId}",
+        "definition": {
+          "entityName": "TestReport",
+          "schema": {
+            "$ref": "#/backend/entities/TestReport"
+          },
+          "description": "Stores test reports associated with a patient health record. Path-based ownership.",
+          "params": [
+            {
+              "name": "userAccountId",
+              "description": "The unique identifier for the user account."
+            },
+            {
+              "name": "healthRecordId",
+              "description": "The unique identifier for the health record."
+            },
+            {
+              "name": "testReportId",
+              "description": "The unique identifier for the test report."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userAccountId}/healthRecords/{healthRecordId}/doctorNotes/{doctorNoteId}",
+        "definition": {
+          "entityName": "DoctorNote",
+          "schema": {
+            "$ref": "#/backend/entities/DoctorNote"
+          },
+          "description": "Stores doctor notes associated with a patient health record. Path-based ownership.",
+          "params": [
+            {
+              "name": "userAccountId",
+              "description": "The unique identifier for the user account."
+            },
+            {
+              "name": "healthRecordId",
+              "description": "The unique identifier for the health record."
+            },
+            {
+              "name": "doctorNoteId",
+              "description": "The unique identifier for the doctor note."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userAccountId}/orders/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Stores order information specific to each user. Path-based ownership.",
+          "params": [
+            {
+              "name": "userAccountId",
+              "description": "The unique identifier for the user account."
+            },
+            {
+              "name": "orderId",
+              "description": "The unique identifier for the order."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userAccountId}/orders/{orderId}/orderItems/{orderItemId}",
+        "definition": {
+          "entityName": "OrderItem",
+          "schema": {
+            "$ref": "#/backend/entities/OrderItem"
+          },
+          "description": "Stores order items associated with a specific order. Path-based ownership.",
+          "params": [
+            {
+              "name": "userAccountId",
+              "description": "The unique identifier for the user account."
+            },
+            {
+              "name": "orderId",
+              "description": "The unique identifier for the order."
+            },
+            {
+              "name": "orderItemId",
+              "description": "The unique identifier for the order item."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to cater to the HealthLinke application's requirements, focusing on user accounts, medical information (medicines, doctors, lab tests), patient health records, and order management. It adheres to the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database Auth Based Control), QAPs (Rules are not Filters), and Invariants. \n\n**Authorization Independence:**\n\n*   User-owned data (PatientHealthRecord, Orders) is structured under `/users/{userId}` paths.  This path-based ownership ensures that access control can be enforced without needing to `get()` data from other collections, promoting atomic operations.\n*   If collaborative features were to be implemented (e.g., shared health records), a membership map (`members: {uid1: \"role\", uid2: \"role\"}`) would be denormalized into each shared document to avoid `get()` calls.\n\n**Clarity of Intent:**\n\n*   The structure clearly separates user-specific data from global data (medicines, doctors, lab tests), making the intent of access control rules more explicit.\n*   Consistent naming conventions are used throughout the structure to improve readability and predictability.\n\n**DBAC (No Custom Claims):**\n\n*   Authorization is based solely on `request.auth.uid` and data within the database itself.  There are no custom claims involved.  If global roles (e.g., admin) were needed, they would be implemented using existence checks on dedicated collections like `/roles_admin/{uid}`.\n\n**QAPs (Rules are not Filters):**\n\n*   The segregation of data based on ownership (e.g., `/users/{userId}/healthRecords/{recordId}`) allows for secure `list` operations.  Rules can be written to only allow a user to list their own health records without accidentally exposing other users' data.  Global data collections (medicines, doctors, lab tests) are designed to be publicly readable, which aligns with the QAP principle, as filtering based on user roles is not needed for these collections.\n\n**Invariants:**\n\n*   The structure allows enforcement of invariants such as ownership by using path-based rules (e.g., only the user with `userId` can create/update/delete documents under `/users/{userId}`). Timestamps are included in entities like `UserAccount` to track creation and modification times, helping to maintain data integrity.\n\n**Specific Design Choices:**\n\n*   `/users/{userId}/healthRecords/{recordId}`: Stores patient health records specific to each user. This follows the principle of path-based ownership for user-specific data.\n*   `/medicines/{medicineId}`, `/doctors/{doctorId}`, `/labTests/{labTestId}`: These collections store global data accessible to all users. No user-specific authorization is needed at the document level in these collections.\n*   `/users/{userId}/orders/{orderId}`: Stores order information specific to each user. Access control is straightforward based on the `userId` in the path.\n"
+  }
+}
