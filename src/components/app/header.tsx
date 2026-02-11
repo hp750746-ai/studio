@@ -14,6 +14,7 @@ import {
   ShoppingCart,
   Upload,
   LogOut,
+  LayoutGrid,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { signOut } from 'firebase/auth';
@@ -42,6 +43,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 
 const navItems = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
   { href: '/store', label: 'Medicines', icon: Pill },
   { href: '/order-medicines', label: 'Order', icon: Upload },
   { href: '/doctors', label: 'Doctors', icon: Stethoscope },
@@ -173,9 +175,6 @@ export default function Header() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard"><User className="mr-2 h-4 w-4" />Dashboard</Link>
-                </DropdownMenuItem>
                  <DropdownMenuItem asChild>
                   <Link href="/dashboard/profile"><User className="mr-2 h-4 w-4" />My Profile</Link>
                 </DropdownMenuItem>
@@ -226,9 +225,9 @@ export default function Header() {
                      </Button>
                      {user ? (
                         <Button className="w-full" asChild>
-                            <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                            <Link href="/dashboard/profile" onClick={() => setMobileMenuOpen(false)}>
                                 <User className="mr-2 h-5 w-5" />
-                                Dashboard
+                                My Profile
                             </Link>
                         </Button>
                      ) : (
