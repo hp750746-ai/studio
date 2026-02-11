@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Bot, Loader2, Sparkles } from 'lucide-react';
+import { Bot, Loader2, Sparkles, Upload } from 'lucide-react';
+import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -23,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { checkSymptoms, SymptomCheckerOutput } from '@/ai/flows/ai-symptom-checker';
 import { getMedicationSuggestions, MedicationSuggestionsOutput } from '@/ai/flows/ai-medication-suggestions';
 import { getDietarySuggestions, DietarySuggestionsOutput } from '@/ai/flows/ai-dietary-suggestions';
+import { diagnoseDiseaseFromImage, DiseaseDiagnosisOutput } from '@/ai/flows/ai-disease-diagnosis';
 import { useToast } from '@/hooks/use-toast';
 
 const symptomSchema = z.object({
@@ -43,14 +45,23 @@ const dietSchema = z.object({
   preferences: z.string().optional(),
 });
 
+const diseaseSchema = z.object({
+  image: z
+    .any()
+    .refine((file) => file instanceof File, 'Please upload an image.')
+    .refine((file) => file && file.size <= 5 * 1024 * 1024, 'Image must be less than 5MB.'),
+});
 
-type AiResult = SymptomCheckerOutput | MedicationSuggestionsOutput | DietarySuggestionsOutput | null;
+
+type AiResult = SymptomCheckerOutput | MedicationSuggestionsOutput | DietarySuggestionsOutput | DiseaseDiagnosisOutput | null;
 
 export default function AiAssistantClient() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('symptoms');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AiResult>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const symptomForm = useForm<z.infer<typeof symptomSchema>>({
     resolver: zodResolver(symptomSchema),
@@ -65,6 +76,10 @@ export default function AiAssistantClient() {
   const dietForm = useForm<z.infer<typeof dietSchema>>({
     resolver: zodResolver(dietSchema),
     defaultValues: { restrictions: '', goals: '', preferences: '' },
+  });
+
+  const diseaseForm = useForm<z.infer<typeof diseaseSchema>>({
+    resolver: zodResolver(diseaseSchema),
   });
 
   const handleSymptomSubmit = async (values: z.infer<typeof symptomSchema>) => {
@@ -121,6 +136,37 @@ export default function AiAssistantClient() {
       setIsLoading(false);
     }
   };
+
+  const handleDiseaseSubmit = async (values: z.infer<typeof diseaseSchema>) => {
+    setIsLoading(true);
+    setResult(null);
+
+    const reader = new FileReader();
+    reader.readAsDataURL(values.image);
+    reader.onload = async () => {
+      const photoDataUri = reader.result as string;
+      try {
+        const response = await diagnoseDiseaseFromImage({ photoDataUri });
+        setResult(response);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "An error occurred",
+          description: "Failed to analyze the image. Please try again.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    reader.onerror = () => {
+        toast({
+            variant: "destructive",
+            title: "An error occurred",
+            description: "Failed to read the image file.",
+        });
+        setIsLoading(false);
+    }
+  };
   
   const renderResult = () => {
     if (isLoading) {
@@ -134,7 +180,7 @@ export default function AiAssistantClient() {
 
     if (!result) return null;
 
-    if ('likelyConditions' in result) {
+    if ('likelyConditions' in result && 'advice' in result) {
       return (
         <div className="space-y-4">
           <div>
@@ -174,16 +220,39 @@ export default function AiAssistantClient() {
         )
     }
 
+    if ('likelyCondition' in result && 'disclaimer' in result) {
+      return (
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-semibold text-lg">Likely Condition</h3>
+            <p className="mt-2 text-foreground/80">{result.likelyCondition}</p>
+          </div>
+          <p className="text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-md">{result.disclaimer}</p>
+        </div>
+      );
+    }
+
     return null;
+  }
+  
+  const handleTabChange = (id: string) => {
+    setActiveTab(id); 
+    setResult(null);
+    setImagePreview(null);
+    symptomForm.reset();
+    medicationForm.reset();
+    dietForm.reset();
+    diseaseForm.reset();
   }
 
   return (
     <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-      <Tabs defaultValue="symptoms" className="w-full" onValueChange={id => { setActiveTab(id); setResult(null); }}>
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs defaultValue="symptoms" className="w-full" onValueChange={handleTabChange}>
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="symptoms">Symptom Checker</TabsTrigger>
           <TabsTrigger value="medication">Medication</TabsTrigger>
           <TabsTrigger value="diet">Diet Tips</TabsTrigger>
+          <TabsTrigger value="disease">Image Analysis</TabsTrigger>
         </TabsList>
         <TabsContent value="symptoms">
           <Card>
@@ -281,6 +350,73 @@ export default function AiAssistantClient() {
                      {isLoading && activeTab === 'diet' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
                     Get Diet Plan
                   </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="disease">
+          <Card>
+            <CardHeader>
+              <CardTitle>Disease Image Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Form {...diseaseForm}>
+                <form onSubmit={diseaseForm.handleSubmit(handleDiseaseSubmit)} className="space-y-6">
+                    <FormField
+                        control={diseaseForm.control}
+                        name="image"
+                        render={({ field: { onChange, value, ...rest } }) => (
+                            <FormItem>
+                                <FormLabel>Upload an image of the condition</FormLabel>
+                                <FormControl>
+                                    <div 
+                                        className="flex items-center justify-center w-full"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        <div className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
+                                            {imagePreview ? (
+                                                <div className="relative w-full h-full">
+                                                    <Image src={imagePreview} alt="Image preview" fill className="object-contain rounded-lg p-2" />
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                                                    <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                                    <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP (MAX. 5MB)</p>
+                                                </div>
+                                            )}
+                                            <Input 
+                                                type="file" 
+                                                className="hidden"
+                                                ref={fileInputRef}
+                                                accept="image/png, image/jpeg, image/webp"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    onChange(file);
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onloadend = () => {
+                                                            setImagePreview(reader.result as string);
+                                                        }
+                                                        reader.readAsDataURL(file);
+                                                    } else {
+                                                        setImagePreview(null);
+                                                    }
+                                                }} 
+                                                {...rest}
+                                            />
+                                        </div>
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <Button type="submit" className="w-full" disabled={isLoading || !imagePreview}>
+                        {isLoading && activeTab === 'disease' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
+                        Analyze Image
+                    </Button>
                 </form>
               </Form>
             </CardContent>
