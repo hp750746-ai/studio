@@ -21,6 +21,9 @@ export type DiseaseDiagnosisInput = z.infer<typeof DiseaseDiagnosisInputSchema>;
 
 const DiseaseDiagnosisOutputSchema = z.object({
   likelyCondition: z.string().describe('The likely skin condition identified from the image.'),
+  conditionDescription: z.string().describe('A brief description of the likely condition.'),
+  recommendedActions: z.array(z.string()).describe('A few suggested non-medical actions the user can take.'),
+  whenToSeeDoctor: z.string().describe('Advice on when it is important to consult a healthcare professional.'),
   disclaimer: z
     .string()
     .describe('A disclaimer that this is not a medical diagnosis and a doctor should be consulted.'),
@@ -39,7 +42,11 @@ const diseaseDiagnosisPrompt = ai.definePrompt({
   output: {schema: DiseaseDiagnosisOutputSchema},
   prompt: `You are a helpful AI assistant with expertise in dermatology. Analyze the provided image of a skin condition.
 
-Based on the image, provide the most likely condition.
+Based on the image, provide the following:
+1. The most likely condition.
+2. A brief description of what that condition is.
+3. A few simple, non-medical first-aid or comfort measures (e.g., "keep the area clean and dry", "apply a cool compress").
+4. Clear advice on when the user should see a doctor (e.g., "if the rash spreads", "if you develop a fever").
 
 IMPORTANT: Always include the following disclaimer in your response: "This is an AI-generated analysis and not a medical diagnosis. Please consult a qualified healthcare professional for any health concerns."
 

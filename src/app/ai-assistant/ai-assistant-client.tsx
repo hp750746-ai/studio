@@ -225,8 +225,26 @@ export default function AiAssistantClient() {
         <div className="space-y-4">
           <div>
             <h3 className="font-semibold text-lg">Likely Condition</h3>
-            <p className="mt-2 text-foreground/80">{result.likelyCondition}</p>
+            <p className="mt-2 font-bold text-foreground">{result.likelyCondition}</p>
+            {result.conditionDescription && <p className="mt-2 text-foreground/80">{result.conditionDescription}</p>}
           </div>
+
+          {result.recommendedActions && result.recommendedActions.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-lg">Recommended Actions</h3>
+              <ul className="list-disc list-inside mt-2 space-y-1 text-foreground/80">
+                {result.recommendedActions.map((action, i) => <li key={i}>{action}</li>)}
+              </ul>
+            </div>
+          )}
+          
+          {result.whenToSeeDoctor && (
+            <div>
+              <h3 className="font-semibold text-lg">When to See a Doctor</h3>
+              <p className="mt-2 text-foreground/80">{result.whenToSeeDoctor}</p>
+            </div>
+          )}
+
           <p className="text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-md">{result.disclaimer}</p>
         </div>
       );
