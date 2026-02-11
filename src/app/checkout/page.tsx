@@ -21,6 +21,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 const checkoutSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   street: z.string().min(5, { message: "Street address must be at least 5 characters." }),
+  address2: z.string().optional(),
+  landmark: z.string().optional(),
   city: z.string().min(2, { message: "City must be at least 2 characters." }),
   state: z.string().min(2, { message: "State must be at least 2 characters." }),
   pincode: z.string().length(6, { message: "Pincode must be 6 digits." }),
@@ -65,6 +67,8 @@ export default function CheckoutPage() {
     defaultValues: {
       name: '',
       street: '',
+      address2: '',
+      landmark: '',
       city: '',
       state: '',
       pincode: '',
@@ -126,10 +130,19 @@ export default function CheckoutPage() {
       });
     });
 
+    const addressParts = [
+        values.name,
+        values.street,
+        values.address2,
+        values.landmark,
+        `${values.city}, ${values.state} - ${values.pincode}`,
+        values.phone
+    ];
+
     const orderData = {
       userAccountId: user.uid,
       orderDate: serverTimestamp(),
-      deliveryAddress: `${values.name}\n${values.street}\n${values.city}, ${values.state} - ${values.pincode}\n${values.phone}`,
+      deliveryAddress: addressParts.filter(Boolean).join('\n'),
       totalAmount: total,
       status: 'Placed',
       itemCount: cartItems.reduce((acc, item) => acc + item.quantity, 0),
@@ -233,6 +246,32 @@ export default function CheckoutPage() {
                             </FormItem>
                         )}
                         />
+                        <FormField
+                            control={form.control}
+                            name="address2"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Address Line 2 (Optional)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Apartment, suite, etc." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                        <FormField
+                            control={form.control}
+                            name="landmark"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Landmark (Optional)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Near City Hospital" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <FormField
                                 control={form.control}
