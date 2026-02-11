@@ -14,14 +14,16 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import type { CartItem } from '@/lib/types';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  address: z.string().min(10, { message: "Address must be at least 10 characters." }),
+  street: z.string().min(5, { message: "Street address must be at least 5 characters." }),
+  city: z.string().min(2, { message: "City must be at least 2 characters." }),
+  state: z.string().min(2, { message: "State must be at least 2 characters." }),
+  pincode: z.string().length(6, { message: "Pincode must be 6 digits." }),
   phone: z.string().min(10, { message: "Please enter a valid phone number." }),
 });
 
@@ -62,7 +64,10 @@ export default function CheckoutPage() {
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       name: '',
-      address: '',
+      street: '',
+      city: '',
+      state: '',
+      pincode: '',
       phone: '',
     }
   });
@@ -124,7 +129,7 @@ export default function CheckoutPage() {
     const orderData = {
       userAccountId: user.uid,
       orderDate: serverTimestamp(),
-      deliveryAddress: `${values.name}\n${values.address}\n${values.phone}`,
+      deliveryAddress: `${values.name}\n${values.street}\n${values.city}, ${values.state} - ${values.pincode}\n${values.phone}`,
       totalAmount: total,
       status: 'Placed',
       itemCount: cartItems.reduce((acc, item) => acc + item.quantity, 0),
@@ -215,19 +220,60 @@ export default function CheckoutPage() {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="address"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full Address</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Enter your full delivery address" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                     <FormField
+                        control={form.control}
+                        name="street"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Street Address</FormLabel>
+                            <FormControl>
+                                <Input placeholder="House no, Street name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="city"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>City</FormLabel>
+                                    <FormControl>
+                                    <Input placeholder="e.g., Mumbai" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="state"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>State</FormLabel>
+                                    <FormControl>
+                                    <Input placeholder="e.g., Maharashtra" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="pincode"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Pincode</FormLabel>
+                                    <FormControl>
+                                    <Input placeholder="e.g., 400001" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </div>
                     <FormField
                       control={form.control}
                       name="phone"
