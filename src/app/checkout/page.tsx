@@ -17,10 +17,11 @@ import type { CartItem } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useUser, useFirestore, errorEmitter, FirestorePermissionError, useDoc, useMemoFirebase } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -31,7 +32,24 @@ const checkoutSchema = z.object({
   state: z.string().min(2, { message: "State must be at least 2 characters." }),
   pincode: z.string().length(6, { message: "Pincode must be 6 digits." }),
   phone: z.string().min(10, { message: "Please enter a valid phone number." }),
+  saveAddress: z.boolean().default(true).optional(),
 });
+
+type UserProfile = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  shippingAddress?: {
+    name: string;
+    street: string;
+    address2?: string;
+    landmark?: string;
+    city: string;
+    state: string;
+    pincode: string;
+    phone: string;
+  }
+}
 
 export default function CheckoutPage() {
   const { toast } = useToast();
@@ -44,6 +62,13 @@ export default function CheckoutPage() {
 
   const qrImage = PlaceHolderImages.find(p => p.id === 'payment-qr');
   const paymentCardsImage = PlaceHolderImages.find(p => p.id === 'payment-cards');
+
+  const userProfileRef = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return doc(firestore, `users/${user.uid}`);
+  }, [firestore, user]);
+
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   useEffect(() => {
     setIsClient(true);
@@ -80,14 +105,17 @@ export default function CheckoutPage() {
       state: '',
       pincode: '',
       phone: '',
+      saveAddress: true,
     }
   });
 
   useEffect(() => {
-    if(user?.displayName) {
-        form.setValue('name', user.displayName);
+    if (userProfile?.shippingAddress) {
+      form.reset({ ...form.getValues(), ...userProfile.shippingAddress, saveAddress: true });
+    } else if (user?.displayName) {
+      form.setValue('name', user.displayName);
     }
-  }, [user, form]);
+  }, [userProfile, user, form]);
 
   const getSubtotal = () => {
     return cartItems.reduce((total, item) => {
@@ -157,6 +185,23 @@ export default function CheckoutPage() {
 
     batch.set(orderRef, orderData);
 
+    if (values.saveAddress) {
+        const userRef = doc(firestore, `users/${user.uid}`);
+        const addressData = {
+            shippingAddress: {
+                name: values.name,
+                street: values.street,
+                address2: values.address2 || '',
+                landmark: values.landmark || '',
+                city: values.city,
+                state: values.state,
+                pincode: values.pincode,
+                phone: values.phone,
+            }
+        };
+        batch.set(userRef, addressData, { merge: true });
+    }
+
     batch.commit()
       .then(() => {
         localStorage.removeItem('cart');
@@ -185,7 +230,7 @@ export default function CheckoutPage() {
       });
   };
 
-  if (!isClient || isUserLoading || !user) {
+  if (!isClient || isUserLoading || !user || isProfileLoading) {
       return (
         <div className="container mx-auto py-12">
             <div className="text-center mb-12">
@@ -333,6 +378,24 @@ export default function CheckoutPage() {
                         </FormItem>
                       )}
                     />
+                    <FormField
+                        control={form.control}
+                        name="saveAddress"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-y-0 gap-2 mt-4">
+                            <FormControl>
+                                <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                id="saveAddress"
+                                />
+                            </FormControl>
+                            <Label htmlFor="saveAddress" className="cursor-pointer">
+                                Save this address for future use
+                            </Label>
+                            </FormItem>
+                        )}
+                        />
                   </CardContent>
                 </Card>
                 <Card>

@@ -27,14 +27,43 @@
           "type": "string",
           "description": "Phone number of the user."
         },
-        "dateOfBirth": {
-          "type": "string",
-          "description": "Date of birth of the user.",
-          "format": "date-time"
-        },
-        "address": {
-          "type": "string",
-          "description": "Address of the user."
+        "shippingAddress": {
+            "type": "object",
+            "description": "User's shipping address",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Full name for the shipping address."
+                },
+                "street": {
+                    "type": "string",
+                    "description": "Street address."
+                },
+                "address2": {
+                    "type": "string",
+                    "description": "Apartment, suite, etc. (optional)."
+                },
+                "landmark": {
+                    "type": "string",
+                    "description": "Nearby landmark (optional)."
+                },
+                "city": {
+                    "type": "string",
+                    "description": "City for the shipping address."
+                },
+                "state": {
+                    "type": "string",
+                    "description": "State for the shipping address."
+                },
+                "pincode": {
+                    "type": "string",
+                    "description": "Pincode for the shipping address."
+                },
+                "phone": {
+                    "type": "string",
+                    "description": "Phone number for the shipping address."
+                }
+            }
         },
         "createdAt": {
           "type": "string",
