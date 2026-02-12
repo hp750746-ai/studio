@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { CreditCard, Loader2, Package, User as UserIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -14,9 +15,12 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import type { CartItem } from '@/lib/types';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -37,6 +41,9 @@ export default function CheckoutPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isClient, setIsClient] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const qrImage = PlaceHolderImages.find(p => p.id === 'payment-qr');
+  const paymentCardsImage = PlaceHolderImages.find(p => p.id === 'payment-cards');
 
   useEffect(() => {
     setIsClient(true);
@@ -333,7 +340,51 @@ export default function CheckoutPage() {
                       <CardTitle className="flex items-center gap-2"><CreditCard /> Payment Method</CardTitle>
                   </CardHeader>
                   <CardContent>
-                      <p className='text-muted-foreground'>This is a demo. Only Cash on Delivery is available.</p>
+                      <Tabs defaultValue="card" className="w-full">
+                          <TabsList className="grid w-full grid-cols-4">
+                              <TabsTrigger value="card">Card</TabsTrigger>
+                              <TabsTrigger value="upi">UPI</TabsTrigger>
+                              <TabsTrigger value="qr">QR Code</TabsTrigger>
+                              <TabsTrigger value="cod">Cash on Delivery</TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="card" className="mt-6 space-y-4">
+                              <div className="space-y-2">
+                                  <Label htmlFor="cardNumber">Card Number</Label>
+                                  <Input id="cardNumber" placeholder="0000 0000 0000 0000" />
+                              </div>
+                              <div className="space-y-2">
+                                  <Label htmlFor="cardHolder">Card Holder</Label>
+                                  <Input id="cardHolder" placeholder="John Doe" />
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                      <Label htmlFor="expiryDate">Expiry Date</Label>
+                                      <Input id="expiryDate" placeholder="MM/YY" />
+                                  </div>
+                                  <div className="space-y-2">
+                                      <Label htmlFor="cvc">CVC</Label>
+                                      <Input id="cvc" placeholder="123" />
+                                  </div>
+                              </div>
+                              {paymentCardsImage && <Image src={paymentCardsImage.imageUrl} alt="Credit card providers" width={200} height={40} data-ai-hint={paymentCardsImage.imageHint} />}
+                          </TabsContent>
+                          <TabsContent value="upi" className="mt-6 space-y-4">
+                              <div className="space-y-2">
+                                  <Label htmlFor="upiId">UPI ID</Label>
+                                  <Input id="upiId" placeholder="yourname@bank" />
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                  Enter your UPI ID to receive a payment request.
+                              </p>
+                          </TabsContent>
+                          <TabsContent value="qr" className="mt-6 flex flex-col items-center gap-4">
+                              {qrImage && <Image src={qrImage.imageUrl} alt="QR Code for payment" width={200} height={200} data-ai-hint={qrImage.imageHint} />}
+                              <p className="text-sm text-muted-foreground">Scan this QR code with any UPI app to pay.</p>
+                          </TabsContent>
+                          <TabsContent value="cod" className="mt-6">
+                              <p className='text-muted-foreground'>You can pay in cash to the delivery agent upon receiving your order.</p>
+                          </TabsContent>
+                      </Tabs>
                   </CardContent>
                 </Card>
               </div>
