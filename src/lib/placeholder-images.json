@@ -399,7 +399,7 @@
     {
       "id": "payment-qr",
       "description": "A placeholder QR code for payment.",
-      "imageUrl": "https://placehold.co/200x200/FFFFFF/000000?text=SCAN%20%26%20PAY",
+      "imageUrl": "https://quickchart.io/qr?text=upi%3A%2F%2Fpay%3Fpa%3Dhealthlinke-demo%40gpay%26pn%3DHealthLinke%26cu%3DINR&size=200",
       "imageHint": "qr code"
     },
     {
