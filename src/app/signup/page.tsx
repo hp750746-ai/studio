@@ -107,7 +107,7 @@ export default function SignupPage() {
                         render={({ field }) => (
                             <FormItem>
                                 <Label htmlFor="full-name">Full name</Label>
-                                <FormControl><Input id="full-name" placeholder="Max Robinson" {...field} /></FormControl>
+                                <FormControl><Input id="full-name" placeholder="Max Robinson" {...field} suppressHydrationWarning /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -123,6 +123,7 @@ export default function SignupPage() {
                                     type="email"
                                     placeholder="m@example.com"
                                     {...field}
+                                    suppressHydrationWarning
                                 /></FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -134,7 +135,7 @@ export default function SignupPage() {
                         render={({ field }) => (
                             <FormItem>
                                 <Label htmlFor="password">Password</Label>
-                                <FormControl><Input id="password" type="password" {...field} /></FormControl>
+                                <FormControl><Input id="password" type="password" {...field} suppressHydrationWarning /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
