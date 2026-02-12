@@ -6,6 +6,7 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
   FirebaseError,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 
 /** Initiate anonymous sign-in (non-blocking). */
@@ -60,5 +61,21 @@ export function initiateEmailSignIn(
     })
     .catch((error: FirebaseError) => {
       onError ? onError(error) : console.error('Sign-in failed:', error);
+    });
+}
+
+/** Initiate password reset email (non-blocking). */
+export function initiatePasswordReset(
+  authInstance: Auth,
+  email: string,
+  onSuccess?: () => void,
+  onError?: (error: FirebaseError) => void
+): void {
+  sendPasswordResetEmail(authInstance, email)
+    .then(() => {
+      onSuccess?.();
+    })
+    .catch((error: FirebaseError) => {
+      onError ? onError(error) : console.error('Password reset failed:', error);
     });
 }
