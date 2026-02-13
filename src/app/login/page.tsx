@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useAuth, useUser } from '@/firebase';
-import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
+import { initiateEmailSignIn, initiateGoogleSignIn } from '@/firebase/non-blocking-login';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { FirebaseError } from 'firebase/app';
@@ -29,6 +29,7 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form';
+import { GoogleIcon } from '@/components/icons/google';
 
 
 const loginSchema = z.object({
@@ -44,6 +45,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -84,6 +86,28 @@ export default function LoginPage() {
     };
     
     initiateEmailSignIn(auth, values.email, values.password, onSuccess, onError);
+  };
+
+  const handleGoogleSignIn = () => {
+    setIsGoogleSubmitting(true);
+    
+    const onSuccess = () => {
+      toast({
+        title: 'Logged in successfully!',
+        description: 'You will be redirected shortly.',
+      });
+    };
+
+    const onError = (error: FirebaseError) => {
+      toast({
+          variant: "destructive",
+          title: 'Login Failed',
+          description: error.message || "An unexpected error occurred with Google Sign-In.",
+      });
+      setIsGoogleSubmitting(false);
+    };
+    
+    initiateGoogleSignIn(auth, onSuccess, onError);
   };
 
   return (
@@ -140,12 +164,30 @@ export default function LoginPage() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  <Button type="submit" className="w-full" disabled={isSubmitting || isGoogleSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Login
                   </Button>
                 </form>
               </Form>
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                    Or continue with
+                    </span>
+                </div>
+              </div>
+              <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isSubmitting || isGoogleSubmitting}>
+                {isGoogleSubmitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <GoogleIcon className="mr-2 h-5 w-5" />
+                )}
+                Google
+              </Button>
             </CardContent>
           </Card>
           <div className="mt-4 text-center text-sm">

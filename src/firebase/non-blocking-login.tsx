@@ -7,6 +7,8 @@ import {
   updateProfile,
   FirebaseError,
   sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth';
 
 /** Initiate anonymous sign-in (non-blocking). */
@@ -77,5 +79,21 @@ export function initiatePasswordReset(
     })
     .catch((error: FirebaseError) => {
       onError ? onError(error) : console.error('Password reset failed:', error);
+    });
+}
+
+/** Initiate Google Sign-In (non-blocking popup). */
+export function initiateGoogleSignIn(
+  authInstance: Auth,
+  onSuccess?: () => void,
+  onError?: (error: FirebaseError) => void
+): void {
+  const provider = new GoogleAuthProvider();
+  signInWithPopup(authInstance, provider)
+    .then(() => {
+      onSuccess?.();
+    })
+    .catch((error: FirebaseError) => {
+      onError ? onError(error) : console.error('Google sign-in failed:', error);
     });
 }
