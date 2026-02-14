@@ -1,5 +1,6 @@
+'use client';
+
 import Image from 'next/image';
-import Link from 'next/link';
 import { Home, Clock } from 'lucide-react';
 
 import type { LabTest } from '@/lib/types';
@@ -15,6 +16,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 type LabTestCardProps = {
   test: LabTest;
@@ -23,6 +25,14 @@ type LabTestCardProps = {
 
 export default function LabTestCard({ test, className }: LabTestCardProps) {
   const image = PlaceHolderImages.find(img => img.id === test.image);
+  const { toast } = useToast();
+
+  const handleBookNow = () => {
+    toast({
+      title: 'Coming Soon!',
+      description: 'The booking functionality for lab tests is not yet available.',
+    });
+  };
 
   return (
     <Card className={cn('flex flex-col overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300', className)}>
@@ -57,9 +67,7 @@ export default function LabTestCard({ test, className }: LabTestCardProps) {
       </CardContent>
       <CardFooter className="flex justify-between items-center bg-muted/50 p-4">
         <p className="text-xl font-bold text-primary">INR {test.price}</p>
-        <Button asChild>
-            <Link href={`/lab-tests/${test.id}`}>Book Now</Link>
-        </Button>
+        <Button onClick={handleBookNow}>Book Now</Button>
       </CardFooter>
     </Card>
   );
