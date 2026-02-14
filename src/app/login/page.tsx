@@ -17,8 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useAuth, useUser } from '@/firebase';
-import { initiateEmailSignIn, initiateGoogleSignIn } from '@/firebase/non-blocking-login';
+import { useAuth, useUser, initiateEmailSignIn, initiateGoogleSignIn } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { FirebaseError } from 'firebase/app';
@@ -212,5 +211,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-    

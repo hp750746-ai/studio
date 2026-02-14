@@ -17,8 +17,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth, useUser } from '@/firebase';
-import { initiateEmailSignUp, initiateGoogleSignIn } from '@/firebase/non-blocking-login';
+import { useAuth, useUser, initiateEmailSignUp, initiateGoogleSignIn } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { FirebaseError } from 'firebase/app';
@@ -211,5 +210,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    
