@@ -99,6 +99,7 @@ export default function LoginPage() {
     };
 
     const onError = (error: FirebaseError) => {
+      console.error("Google Sign-In Error:", error.code, error.message);
       toast({
           variant: "destructive",
           title: 'Login Failed',
@@ -164,7 +165,7 @@ export default function LoginPage() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isSubmitting || isGoogleSubmitting}>
+                  <Button type="submit" className="w-full" disabled={isSubmitting || isGoogleSubmitting} suppressHydrationWarning>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Login
                   </Button>
