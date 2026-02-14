@@ -31,7 +31,7 @@ export default function OrderDetailsPage() {
   
   const orderRef = useMemoFirebase(() => {
     if (!user || !firestore || !orderId) return null;
-    return doc(firestore, `users/${user.uid}/orders`, orderId);
+    return doc(firestore, `userProfiles/${user.uid}/orders`, orderId);
   }, [user, firestore, orderId]);
 
   const { data: order, isLoading: isOrderLoading } = useDoc<Order>(orderRef);

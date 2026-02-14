@@ -65,7 +65,7 @@ export default function CheckoutPage() {
 
   const userProfileRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return doc(firestore, `users/${user.uid}`);
+    return doc(firestore, `userProfiles/${user.uid}`);
   }, [firestore, user]);
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
@@ -149,7 +149,7 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     const batch = writeBatch(firestore);
-    const orderRef = doc(collection(firestore, `users/${user.uid}/orders`));
+    const orderRef = doc(collection(firestore, `userProfiles/${user.uid}/orders`));
 
     cartItems.forEach(item => {
       const discountedPrice = item.discount ? item.price - (item.price * item.discount) / 100 : item.price;
@@ -186,7 +186,7 @@ export default function CheckoutPage() {
     batch.set(orderRef, orderData);
 
     if (values.saveAddress) {
-        const userRef = doc(firestore, `users/${user.uid}`);
+        const userRef = doc(firestore, `userProfiles/${user.uid}`);
         const addressData = {
             shippingAddress: {
                 name: values.name,
