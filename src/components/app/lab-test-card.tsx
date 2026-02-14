@@ -67,7 +67,7 @@ export default function LabTestCard({ test, className }: LabTestCardProps) {
       </CardContent>
       <CardFooter className="flex justify-between items-center bg-muted/50 p-4">
         <p className="text-xl font-bold text-primary">INR {test.price}</p>
-        <Button onClick={handleBookNow}>Book Now</Button>
+        <Button type="button" onClick={handleBookNow}>Book Now</Button>
       </CardFooter>
     </Card>
   );
