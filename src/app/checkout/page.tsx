@@ -36,9 +36,9 @@ const checkoutSchema = z.object({
 });
 
 type UserProfile = {
-  firstName?: string;
-  lastName?: string;
+  name?: string;
   email?: string;
+  phone?: string;
   shippingAddress?: {
     name: string;
     street: string;
@@ -112,6 +112,8 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (userProfile?.shippingAddress) {
       form.reset({ ...form.getValues(), ...userProfile.shippingAddress, saveAddress: true });
+    } else if (userProfile?.name) {
+      form.setValue('name', userProfile.name);
     } else if (user?.displayName) {
       form.setValue('name', user.displayName);
     }
@@ -187,7 +189,11 @@ export default function CheckoutPage() {
 
     if (values.saveAddress) {
         const userRef = doc(firestore, `userProfiles/${user.uid}`);
-        const addressData = {
+        const profileDataForMerge = {
+            id: user.uid,
+            name: values.name,
+            email: user.email,
+            phone: values.phone,
             shippingAddress: {
                 name: values.name,
                 street: values.street,
@@ -199,7 +205,7 @@ export default function CheckoutPage() {
                 phone: values.phone,
             }
         };
-        batch.set(userRef, addressData, { merge: true });
+        batch.set(userRef, profileDataForMerge, { merge: true });
     }
 
     batch.commit()
