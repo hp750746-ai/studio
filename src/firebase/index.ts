@@ -44,7 +44,8 @@ export function getSdks(firebaseApp: FirebaseApp) {
 }
 
 export * from './auth-helpers';
-export * from './provider';
+export { FirebaseProvider } from './provider';
+export * from './hooks';
 export * from './client-provider';
 export * from './firestore/use-collection';
 export * from './firestore/use-doc';
