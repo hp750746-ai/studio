@@ -100,7 +100,6 @@ export default function SignupPage() {
       };
 
       const onError = (error: FirebaseError) => {
-          console.error("Google Sign-Up Error:", error.code, error.message);
           toast({
               variant: "destructive",
               title: 'Sign-up Failed',

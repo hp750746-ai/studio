@@ -99,7 +99,6 @@ export default function LoginPage() {
     };
 
     const onError = (error: FirebaseError) => {
-      console.error("Google Sign-In Error:", error.code, error.message);
       toast({
           variant: "destructive",
           title: 'Login Failed',
