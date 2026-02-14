@@ -175,7 +175,7 @@ export default function CheckoutPage() {
     ];
 
     const orderData = {
-      userAccountId: user.uid,
+      userProfileId: user.uid,
       orderDate: serverTimestamp(),
       deliveryAddress: addressParts.filter(Boolean).join('\n'),
       totalAmount: total,
