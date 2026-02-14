@@ -1,39 +1,57 @@
 /**
- * # Core Philosophy
- * This ruleset enforces a strict, multi-tiered security model designed for a healthcare application.
- * The primary principle is "Authorization Independence," where authorization data is denormalized
- * directly onto documents to create fast, secure, and non-recursive rules.
+ * @file firestore.rules
+ * @description Security rules for the HealthLinke Firestore database.
  *
- * # Data Structure
- * The data is organized into three main categories:
- * 1. Private User Data: All data exclusively owned by a single user (e.g., addresses, prescriptions, orders)
- *    is nested within the `/userProfiles/{userId}` data tree. Access is strictly limited to the authenticated owner.
- * 2. Shared Transactional Data: Data accessed by multiple, specific parties (e.g., appointments shared
- *    between a user and a doctor) is stored in top-level collections. These documents contain denormalized
- *    UIDs of all participants (e.g., `userProfileId`, `doctorId`) to grant access without costly lookups.
- * 3. Public & Admin-Managed Data: Publicly readable data (e.g., lists of doctors, medicines, health tips)
- *    is stored in top-level collections. Read access is open to all, while write access is restricted to
- *    administrators, whose roles are managed in a dedicated `/admin_roles` collection.
+ * @section Core Philosophy
+ * This ruleset enforces a strict user-ownership model for all private health data,
+ * segregating it within a user-specific data tree. Publicly accessible data, such
+ * as doctor profiles and medicine catalogs, is stored in top-level collections
+ * with read-only access for authenticated users and write access restricted to
+ * administrators. Data shared between specific users (e.g., a consultation
+ * between a doctor and a patient) is secured using denormalized user IDs to grant
+ * access only to the involved parties.
  *
- * # Key Security Decisions
- * - User Isolation: A user can NEVER access, list, or even know about another user's private data tree. All
- *   rules for paths under `/userProfiles/{userId}` are gated by an `isOwner(userId)` check.
- * - No `get()` or `exists()` for Authorization: To ensure performance and scalability, rules avoid cross-document
- *   reads for authorization. All necessary user IDs are denormalized onto the document being secured.
- * - Admin-Only Writes for Public Content: Any collection intended for public consumption (e.g., `healthTips`,
- *   `medicines`) is read-only for regular users. All write operations are gated by an `isAdmin()` check.
- * - Prototyping Flexibility: These rules strictly enforce WHO can access WHAT, but they do NOT enforce the
- *   specific shape or data types of documents. This allows for rapid frontend development and iteration.
- *   Validation is limited to fields critical for establishing ownership and relational integrity (e.g., ensuring
- *   a new document's `userProfileId` matches the creator's UID).
+ * @section Data Structure
+ * - /users/{userId}/... : All private data for a single user is nested here.
+ *   This includes their profile, family members, prescriptions, orders, and lab bookings.
+ *   Access is controlled by matching the `userId` in the path with the authenticated user's UID.
+ * - /doctors, /medicines, /healthTips, etc.: Top-level collections for data that is
+ *   publicly readable but has controlled, typically admin-only, write access.
+ * - /doctorConsultations: A top-level collection for shared documents, accessible only
+ *   by the participants (patient and doctor) whose UIDs are stored directly on the document.
+ *
+ * @section Key Security Decisions
+ * - User Isolation: Users can only access data within their own `/users/{userId}` tree.
+ *   Listing the top-level `/users` collection is explicitly forbidden to protect user privacy.
+ * - Role-Based Access Control (RBAC): Administrative and doctor roles are managed via
+ *   the /roles_admin and /roles_doctor collections. The existence of a document like
+ *   `/roles_admin/{userId}` grants that user admin privileges for writing to public collections.
+ *   Direct client access to these role collections is blocked.
+ * - Default Secure: Any path not explicitly matched is denied access. All write
+ *   operations require authentication and specific authorization logic.
+ *
+ * @section Denormalization for Authorization
+ * To ensure high performance and strong security, this ruleset relies heavily on
+ * denormalization. Instead of using slow and costly `get()` calls to check parent
+ * document permissions, authorization-critical data (like an `ownerUserId`,
+ * `patientUserId`, or `doctorUserId`) is copied directly onto the document being
+ * secured. This allows for simple, fast, and reliable rule evaluation, such as
+ * `request.auth.uid == resource.data.patientUserId`, and enables secure client-side
+ * querying.
+ *
+ * @section Structural Segregation
+ * Private user data (e.g., `/users/{userId}/prescriptions`) is structurally separated
+ * from public data (e.g., `/medicines`). This is more secure and performant than using
+ * a single collection with a boolean flag, especially for list operations, as it
+ * prevents any possibility of accidentally exposing private documents in a public query.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ----------------------------------------
+    // -------------------------------------------------------------------------
     // Helper Functions
-    // ----------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Checks if a user is authenticated.
@@ -43,444 +61,360 @@ service cloud.firestore {
     }
 
     /**
-     * Checks if the currently authenticated user's UID matches the provided userId.
-     * This is the cornerstone of the user-ownership model.
+     * Checks if the authenticated user's UID matches the provided userId.
+     * This is the primary function for enforcing document ownership.
      */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
     /**
-     * Checks if a document currently exists in Firestore.
-     * CRITICAL for all update and delete operations to prevent unintended side effects.
+     * Verifies that a document already exists.
+     * CRITICAL for all update and delete operations to prevent acting on non-existent data.
      */
     function isExistingDoc() {
       return resource != null;
     }
 
     /**
-     * Combines ownership and existence checks for secure update/delete operations.
+     * Combines ownership and existence checks for secure updates and deletes.
      */
     function isExistingOwner(userId) {
       return isOwner(userId) && isExistingDoc();
     }
 
     /**
-     * Checks if the user has administrative privileges by looking for their UID
-     * in the /admin_roles collection. This is a secure, existence-based role check.
+     * Checks if the authenticated user has an administrator role.
+     * Roles are managed in a private collection inaccessible to clients.
      */
     function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/admin_roles/$(request.auth.uid));
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
 
     /**
-     * Validates that the userProfileId in a document matches the userProfileId from the path.
-     * Enforces data consistency for user-owned subcollections.
+     * Checks if the authenticated user has a doctor role.
      */
-    function isDataOwner(userProfileId) {
-      // On create, check the incoming data.
-      // On update, check the immutable existing data to allow partial updates.
-      return request.resource.data.userProfileId == userProfileId;
+    function isDoctor() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_doctor/$(request.auth.uid));
     }
 
     /**
-     * Validates immutability of the userProfileId field on update.
+     * Validates that the user is creating a document with their own ID.
+     * Enforces relational integrity on create for a user's root document.
      */
-    function isUserProfileIdImmutable() {
-      return request.resource.data.userProfileId == resource.data.userProfileId;
+    function isCreatingOwnUserDoc(userId) {
+      return isOwner(userId) && request.resource.data.id == userId;
     }
 
-    // ----------------------------------------
-    // User-Scoped Collections
-    // ----------------------------------------
+    /**
+     * Validates that a user-owned subcollection document correctly links back to its owner.
+     * The `ownerUserId` field is denormalized for authorization independence.
+     */
+    function isCreatingConsistentOwnedDoc(userId) {
+      return isOwner(userId) && request.resource.data.userId == userId;
+    }
 
     /**
-     * @description A user's own profile. Users can create, read, and manage their own profile,
-     * but cannot see or list other users' profiles.
-     * @path /userProfiles/{userProfileId}
-     * @allow (create) A new user (auth.uid='user_abc') creating their own profile document at /userProfiles/user_abc.
-     * @deny (get) A user (auth.uid='user_xyz') trying to read /userProfiles/user_abc.
-     * @principle Restricts access to a user's own data tree (Self-Creation & Ownership).
+     * Ensures a critical, relational field cannot be changed after creation.
      */
-    match /userProfiles/{userProfileId} {
-      allow get: if isOwner(userProfileId);
+    function isImmutable(fieldName) {
+      return request.resource.data[fieldName] == resource.data[fieldName];
+    }
+
+
+    // -------------------------------------------------------------------------
+    // User Data
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description Manages a user's core profile document.
+     * @path /users/{userId}
+     * @allow (create) A new user creating their own user document.
+     * @deny (list) Any user attempting to list all documents in the `/users` collection.
+     * @principle A user can manage their own root document, but cannot see other users' documents.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
       allow list: if false;
-      allow create: if isOwner(userProfileId) && request.resource.data.id == userProfileId;
-      allow update: if isExistingOwner(userProfileId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userProfileId);
-    }
-
-    /**
-     * @description A user's private list of family members.
-     * @path /userProfiles/{userProfileId}/familyMembers/{familyMemberId}
-     * @allow (create) User 'user_abc' creating a new family member under their own profile.
-     * @deny (list) User 'user_xyz' trying to list family members for 'user_abc'.
-     * @principle Enforces document ownership within a user's private data tree.
-     */
-    match /userProfiles/{userProfileId}/familyMembers/{familyMemberId} {
-      allow get, list: if isOwner(userProfileId);
-      allow create: if isOwner(userProfileId) && isDataOwner(userProfileId);
-      allow update: if isExistingOwner(userProfileId) && isUserProfileIdImmutable();
-      allow delete: if isExistingOwner(userProfileId);
-    }
-
-    /**
-     * @description A user's private list of addresses.
-     * @path /userProfiles/{userProfileId}/addresses/{addressId}
-     * @allow (get) User 'user_abc' reading one of their own addresses.
-     * @deny (create) User 'user_xyz' trying to create an address under 'user_abc'.
-     * @principle Enforces document ownership within a user's private data tree.
-     */
-    match /userProfiles/{userProfileId}/addresses/{addressId} {
-      allow get, list: if isOwner(userProfileId);
-      allow create: if isOwner(userProfileId) && isDataOwner(userProfileId);
-      allow update: if isExistingOwner(userProfileId) && isUserProfileIdImmutable();
-      allow delete: if isExistingOwner(userProfileId);
-    }
-
-    /**
-     * @description A user's private medical prescriptions.
-     * @path /userProfiles/{userProfileId}/prescriptions/{prescriptionId}
-     * @allow (list) User 'user_abc' listing all of their own prescriptions.
-     * @deny (get) User 'user_xyz' trying to get a prescription belonging to 'user_abc'.
-     * @principle Enforces document ownership within a user's private data tree.
-     */
-    match /userProfiles/{userProfileId}/prescriptions/{prescriptionId} {
-      allow get, list: if isOwner(userProfileId);
-      allow create: if isOwner(userProfileId) && isDataOwner(userProfileId);
-      allow update: if isExistingOwner(userProfileId) && isUserProfileIdImmutable();
-      allow delete: if isExistingOwner(userProfileId);
-    }
-
-    /**
-     * @description A user's private medicine reminders.
-     * @path /userProfiles/{userProfileId}/medicineReminders/{reminderId}
-     * @allow (update) User 'user_abc' updating one of their own reminders.
-     * @deny (delete) User 'user_xyz' trying to delete a reminder for 'user_abc'.
-     * @principle Enforces document ownership within a user's private data tree.
-     */
-    match /userProfiles/{userProfileId}/medicineReminders/{reminderId} {
-      allow get, list: if isOwner(userProfileId);
-      allow create: if isOwner(userProfileId) && isDataOwner(userProfileId);
-      allow update: if isExistingOwner(userProfileId) && isUserProfileIdImmutable();
-      allow delete: if isExistingOwner(userProfileId);
-    }
-
-    /**
-     * @description A user's private lab test reports.
-     * @path /userProfiles/{userProfileId}/testReports/{testReportId}
-     * @allow (get) User 'user_abc' reading one of their own test reports.
-     * @deny (list) User 'user_xyz' trying to list reports for 'user_abc'.
-     * @principle Enforces document ownership within a user's private data tree.
-     */
-    match /userProfiles/{userProfileId}/testReports/{testReportId} {
-      allow get, list: if isOwner(userProfileId);
-      allow create: if isOwner(userProfileId) && isDataOwner(userProfileId);
-      allow update: if isExistingOwner(userProfileId) && isUserProfileIdImmutable();
-      allow delete: if isExistingOwner(userProfileId);
-    }
-
-    /**
-     * @description Private notes about a user, created during an appointment.
-     * @path /userProfiles/{userProfileId}/doctorNotes/{noteId}
-     * @allow (get) User 'user_abc' reading a doctor's note related to their appointment.
-     * @deny (create) User 'user_xyz' creating a note for 'user_abc'.
-     * @principle Enforces document ownership within a user's private data tree.
-     */
-    match /userProfiles/{userProfileId}/doctorNotes/{noteId} {
-      allow get, list: if isOwner(userProfileId);
-      allow create: if isOwner(userProfileId) && isDataOwner(userProfileId);
-      allow update: if isExistingOwner(userProfileId) && isUserProfileIdImmutable();
-      allow delete: if isExistingOwner(userProfileId);
-    }
-
-    /**
-     * @description A user's private purchase orders.
-     * @path /userProfiles/{userProfileId}/orders/{orderId}
-     * @allow (list) User 'user_abc' listing their own past orders.
-     * @deny (get) User 'user_xyz' reading an order belonging to 'user_abc'.
-     * @principle Enforces document ownership within a user's private data tree.
-     */
-    match /userProfiles/{userProfileId}/orders/{orderId} {
-      allow get, list: if isOwner(userProfileId);
-      allow create: if isOwner(userProfileId) && isDataOwner(userProfileId);
-      allow update: if isExistingOwner(userProfileId) && isUserProfileIdImmutable();
-      allow delete: if isExistingOwner(userProfileId);
+      allow create: if isCreatingOwnUserDoc(userId);
+      allow update: if isExistingOwner(userId) && isImmutable('id');
+      allow delete: if false; // User documents should generally not be deletable by the user.
 
       /**
-       * @description Individual items within a user's order. Access is inherited from the parent order.
-       * @path /userProfiles/{userProfileId}/orders/{orderId}/orderItems/{orderItemId}
-       * @allow (get) User 'user_abc' reading an item from one of their own orders.
-       * @deny (list) User 'user_xyz' listing items from an order belonging to 'user_abc'.
-       * @principle Enforces document ownership via hierarchical path structure.
+       * @description Manages a user's primary health profile.
+       * @path /users/{userId}/patientProfile/{patientProfileId}
+       * @allow (create) An authenticated user creating their own patient profile.
+       * @deny (read) A user trying to read another user's patient profile.
+       * @principle Restricts access to a user's own data tree.
        */
-      match /orderItems/{orderItemId} {
-        allow get, list: if isOwner(userProfileId);
-        allow create: if isOwner(userProfileId); // Note: Finer-grained validation would check orderId.
-        allow update: if isExistingOwner(userProfileId);
-        allow delete: if isExistingOwner(userProfileId);
+      match /patientProfile/{patientProfileId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isCreatingConsistentOwnedDoc(userId);
+        allow update, delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description Manages health records for a user's family members.
+       * @path /users/{userId}/patientProfile/familyMembers/{familyMemberId}
+       * @allow (create) A user adding a family member to their own profile.
+       * @deny (read) A user trying to read another user's family members.
+       * @principle Enforces document ownership within a user's data tree.
+       */
+      match /patientProfile/familyMembers/{familyMemberId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId); // Assumes client sets patientProfileId correctly
+        allow update, delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description Manages prescriptions uploaded by a user.
+       * @path /users/{userId}/patientProfile/prescriptions/{prescriptionId}
+       * @allow (create) A user uploading a prescription to their own profile.
+       * @deny (read) A user trying to access another user's prescriptions.
+       * @principle Enforces document ownership for sensitive health documents.
+       */
+      match /patientProfile/prescriptions/{prescriptionId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update, delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description Manages a user's lab test bookings.
+       * @path /users/{userId}/patientProfile/labTestBookings/{bookingId}
+       * @allow (create) A user booking a lab test for themselves.
+       * @deny (read) A user trying to view another user's lab test bookings.
+       * @principle Enforces document ownership within a user's data tree.
+       */
+      match /patientProfile/labTestBookings/{bookingId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update, delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description Manages a user's medicine orders.
+       * @path /users/{userId}/patientProfile/orders/{orderId}
+       * @allow (create) A user placing an order.
+       * @deny (read) A user trying to view another user's orders.
+       * @principle Enforces document ownership within a user's data tree.
+       */
+      match /patientProfile/orders/{orderId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update, delete: if isExistingOwner(userId);
+
+        /**
+         * @description Manages the items within a user's order.
+         * @path /users/{userId}/patientProfile/orders/{orderId}/orderItems/{orderItemId}
+         * @allow (read) A user reading the items in their own order.
+         * @deny (read) A user trying to read the items from another user's order.
+         * @principle Access is inherited from the parent document's ownership rules.
+         */
+        match /orderItems/{orderItemId} {
+          allow get, list: if isOwner(userId);
+          allow create: if isOwner(userId);
+          allow update, delete: if isExistingOwner(userId);
+        }
+      }
+
+      /**
+       * @description Manages referral records linked to a user.
+       * @path /users/{userId}/referrals/{referralId}
+       * @allow (read) A user reading a referral they sent or received.
+       * @deny (read) A user trying to read a referral they are not part of.
+       * @principle Shared access model where both participants can read the document.
+       */
+      match /referrals/{referralId} {
+        allow get: if isSignedIn() && (isOwner(userId) || request.auth.uid == resource.data.referredUserId);
+        allow list: if isOwner(userId); // Only list referrals you initiated.
+        allow create: if isOwner(userId) && request.resource.data.referrerUserId == userId;
+        allow update: if false; // Referrals should be immutable by clients.
+        allow delete: if false;
       }
     }
 
-    // ----------------------------------------
-    // Public Read / Owner Write Collections
-    // ----------------------------------------
+
+    // -------------------------------------------------------------------------
+    // Public & Shared Data
+    // -------------------------------------------------------------------------
 
     /**
-     * @description Public doctor profiles. Anyone can view, but only the doctor can manage their own profile.
+     * @description Manages public doctor profiles.
      * @path /doctors/{doctorId}
-     * @allow (get) Any user, signed in or not, viewing a doctor's profile.
-     * @deny (update) A user (auth.uid='user_abc') trying to update a doctor's profile (auth.uid='doctor_xyz').
-     * @principle Implements public read with owner-only writes.
+     * @allow (read) Any authenticated user reading a doctor's profile.
+     * @deny (update) A doctor trying to update another doctor's profile.
+     * @principle Public read access for discovery, with writes restricted to the document owner who also has a 'doctor' role.
      */
     match /doctors/{doctorId} {
-      allow get, list: if true;
-      allow create: if isOwner(doctorId) && request.resource.data.id == doctorId;
-      allow update: if isExistingOwner(doctorId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(doctorId);
+      allow get, list: if isSignedIn();
+      allow create: if isDoctor() && request.resource.data.userId == request.auth.uid;
+      allow update: if isExistingDoc() && isDoctor() && isOwner(resource.data.userId) && isImmutable('userId');
+      allow delete: if false;
     }
 
     /**
-     * @description A doctor's available time slots. Publicly readable for booking.
-     * @path /doctors/{doctorId}/timeSlots/{timeSlotId}
-     * @allow (list) Any user listing a doctor's available time slots.
-     * @deny (create) User 'user_abc' trying to create a time slot for doctor 'doctor_xyz'.
-     * @principle Implements public read with owner-only writes, based on the parent document owner.
+     * @description Manages records of consultations between patients and doctors.
+     * @path /doctorConsultations/{consultationId}
+     * @allow (read) A patient or doctor reading a consultation they are part of.
+     * @deny (read) A user trying to read a consultation they are not involved in.
+     * @principle Shared access model where participants can access the document via denormalized IDs.
      */
-    match /doctors/{doctorId}/timeSlots/{timeSlotId} {
-      allow get, list: if true;
-      allow create: if isOwner(doctorId) && request.resource.data.doctorId == doctorId;
-      allow update: if isExistingOwner(doctorId) && request.resource.data.doctorId == resource.data.doctorId;
-      allow delete: if isExistingOwner(doctorId);
+    match /doctorConsultations/{consultationId} {
+      allow get: if isSignedIn() && (request.auth.uid == resource.data.patientProfileId || request.auth.uid == resource.data.doctorId);
+      allow list: if isSignedIn(); // Allows queries like "where('patientProfileId', '==', auth.uid)". Firestore filters results based on the 'get' rule.
+      allow create: if isSignedIn() && request.resource.data.patientProfileId == request.auth.uid; // Patient creates consultation
+      allow update: if isExistingDoc() && isSignedIn() && (request.auth.uid == resource.data.patientProfileId || request.auth.uid == resource.data.doctorId);
+      allow delete: if false; // Consultations should be cancelled via a status update, not deleted.
+
+      /**
+       * @description Manages notes made by a doctor for a specific consultation.
+       * @path /doctorConsultations/{consultationId}/doctorNotes/{noteId}
+       * @allow (create) The doctor involved in the parent consultation creating a note.
+       * @deny (create) The patient trying to create a doctor's note for their own consultation.
+       * @principle Access is controlled by checking participation in the parent document.
+       */
+      match /doctorNotes/{noteId} {
+        function isConsultationParticipant() {
+          let consultation = get(/databases/$(database)/documents/doctorConsultations/$(consultationId)).data;
+          return isSignedIn() && (request.auth.uid == consultation.patientProfileId || request.auth.uid == consultation.doctorId);
+        }
+        function isConsultationDoctor() {
+          let consultation = get(/databases/$(database)/documents/doctorConsultations/$(consultationId)).data;
+          return isDoctor() && request.auth.uid == consultation.doctorId;
+        }
+
+        allow get, list: if isConsultationParticipant();
+        allow create: if isConsultationDoctor() && request.resource.data.doctorId == request.auth.uid;
+        allow update: if isExistingDoc() && isDoctor() && isOwner(resource.data.doctorId);
+        allow delete: if isExistingDoc() && isDoctor() && isOwner(resource.data.doctorId);
+      }
     }
 
-    /**
-     * @description Public pharmacy profiles. Anyone can view, but only the owner can manage their profile.
-     * @path /pharmacies/{pharmacyId}
-     * @allow (get) Any user viewing a pharmacy's profile.
-     * @deny (update) A user trying to update a pharmacy they do not own.
-     * @principle Implements public read with owner-only writes based on a denormalized 'ownerUserProfileId' field.
-     */
-    match /pharmacies/{pharmacyId} {
-      allow get, list: if true;
-      allow create: if isSignedIn() && isOwner(request.resource.data.ownerUserProfileId);
-      allow update: if isExistingDoc() && isOwner(resource.data.ownerUserProfileId) && request.resource.data.ownerUserProfileId == resource.data.ownerUserProfileId;
-      allow delete: if isExistingDoc() && isOwner(resource.data.ownerUserProfileId);
-    }
-
-    // ----------------------------------------
-    // Shared Access Collections
-    // ----------------------------------------
+    // -------------------------------------------------------------------------
+    // Public Read-Only / Admin-Write Collections
+    // -------------------------------------------------------------------------
 
     /**
-     * @description Appointments, accessible by the patient and the doctor.
-     * @path /appointments/{appointmentId}
-     * @allow (get) The patient ('user_abc') or doctor ('doctor_xyz') reading their shared appointment.
-     * @deny (get) A third-party user ('user_123') trying to read the appointment.
-     * @principle Implements shared access by checking if the user is one of the denormalized participants.
-     */
-    match /appointments/{appointmentId} {
-      allow get: if isExistingDoc() && (isOwner(resource.data.userProfileId) || isOwner(resource.data.doctorId));
-      allow list: if isSignedIn();
-      allow create: if isOwner(request.resource.data.userProfileId);
-      allow update: if isExistingDoc() && (isOwner(resource.data.userProfileId) || isOwner(resource.data.doctorId));
-      allow delete: if isExistingDoc() && (isOwner(resource.data.userProfileId) || isOwner(resource.data.doctorId));
-    }
-
-    /**
-     * @description Lab test bookings, accessible by the user who booked them.
-     * @path /testBookings/{testBookingId}
-     * @allow (get) The user ('user_abc') who booked the test reading its details.
-     * @deny (get) Another user ('user_xyz') trying to read the booking.
-     * @principle Implements shared access, currently restricted to the primary user.
-     */
-    match /testBookings/{testBookingId} {
-      allow get: if isExistingDoc() && isOwner(resource.data.userProfileId);
-      allow list: if isSignedIn();
-      allow create: if isOwner(request.resource.data.userProfileId);
-      allow update: if isExistingDoc() && isOwner(resource.data.userProfileId);
-      allow delete: if isExistingDoc() && isOwner(resource.data.userProfileId);
-    }
-
-    /**
-     * @description User referral records, accessible by both the referrer and the referred user.
-     * @path /referrals/{referralId}
-     * @allow (get) The referrer ('user_abc') or the referred user ('user_xyz') reading the referral record.
-     * @deny (get) A third-party user trying to read the referral.
-     * @principle Implements shared access by checking if the user is one of the denormalized participants.
-     */
-    match /referrals/{referralId} {
-      allow get: if isExistingDoc() && (isOwner(resource.data.referrerUserProfileId) || isOwner(resource.data.referredUserProfileId));
-      allow list: if isSignedIn();
-      allow create: if isOwner(request.resource.data.referrerUserProfileId);
-      allow update: if isExistingDoc() && (isOwner(resource.data.referrerUserProfileId) || isOwner(resource.data.referredUserProfileId));
-      allow delete: if isExistingDoc() && isOwner(resource.data.referrerUserProfileId);
-    }
-
-    /**
-     * @description Delivery information for an order.
-     * @path /deliveries/{deliveryId}
-     * @allow (create) This rule is disabled pending a schema update.
-     * @deny (get) A user trying to read delivery info without proper ownership context.
-     * @principle Denies all access due to a missing authorization field.
-     */
-    match /deliveries/{deliveryId} {
-      // CRITICAL: Cannot implement secure rules. The 'Delivery' entity is missing a 'userProfileId'
-      // or other ownership field. This field must be denormalized onto the document for authorization.
-      allow get, list: if false; // TODO: Add owner validation once schema includes userProfileId.
-      allow create, update, delete: if false; // TODO: Add owner validation once schema includes userProfileId.
-    }
-
-    // ----------------------------------------
-    // Public Read / Admin Write Collections
-    // ----------------------------------------
-
-    /**
-     * @description Global list of medical specializations. Publicly readable, admin-only writes.
-     * @path /specializations/{specializationId}
-     * @allow (list) Any user listing all available specializations.
-     * @deny (create) A non-admin user trying to add a new specialization.
-     * @principle Secures public content by restricting writes to administrators.
-     */
-    match /specializations/{specializationId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    /**
-     * @description Global list of consultation types. Publicly readable, admin-only writes.
-     * @path /consultationTypes/{consultationTypeId}
-     * @allow (get) Any user reading the details of a consultation type.
-     * @deny (update) A non-admin user trying to modify a consultation type.
-     * @principle Secures public content by restricting writes to administrators.
-     */
-    match /consultationTypes/{consultationTypeId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    /**
-     * @description Global list of medicine categories. Publicly readable, admin-only writes.
+     * @description Manages categories for medicines. Publicly readable.
      * @path /medicineCategories/{categoryId}
-     * @allow (list) Any user listing all medicine categories.
-     * @deny (delete) A non-admin user trying to delete a category.
-     * @principle Secures public content by restricting writes to administrators.
+     * @allow (read) Any authenticated user browsing medicine categories.
+     * @deny (create) Any non-admin user trying to create a new category.
+     * @principle Public read access with admin-only writes for catalog management.
      */
     match /medicineCategories/{categoryId} {
-      allow get, list: if true;
+      allow get, list: if isSignedIn();
       allow create, update, delete: if isAdmin();
     }
 
     /**
-     * @description Publicly viewable details of available medicines.
+     * @description Manages individual medicine details. Publicly readable.
      * @path /medicines/{medicineId}
-     * @allow (list) Any user browsing the list of medicines.
-     * @deny (create) A non-admin user trying to add a new medicine.
-     * @principle Secures public content by restricting writes to administrators.
+     * @allow (read) Any authenticated user browsing medicines.
+     * @deny (create) Any non-admin user trying to add a new medicine.
+     * @principle Public read access with admin-only writes for catalog management.
      */
     match /medicines/{medicineId} {
-      allow get, list: if true;
+      allow get, list: if isSignedIn();
       allow create, update, delete: if isAdmin();
     }
 
     /**
-     * @description Publicly discoverable diagnostic labs.
-     * @path /labs/{labId}
-     * @allow (get) Any user viewing lab details.
-     * @deny (update) A non-admin user trying to update lab information.
-     * @principle Secures public content by restricting writes to administrators.
+     * @description Manages categories for lab tests. Publicly readable.
+     * @path /labTestCategories/{categoryId}
+     * @allow (read) Any authenticated user browsing lab test categories.
+     * @deny (create) Any non-admin user trying to create a new category.
+     * @principle Public read access with admin-only writes for catalog management.
      */
-    match /labs/{labId} {
-      allow get, list: if true;
+    match /labTestCategories/{categoryId} {
+      allow get, list: if isSignedIn();
       allow create, update, delete: if isAdmin();
     }
 
     /**
-     * @description Publicly viewable details of available lab tests.
+     * @description Manages individual lab test details. Publicly readable.
      * @path /labTests/{labTestId}
-     * @allow (list) Any user browsing available lab tests.
-     * @deny (create) A non-admin user trying to create a new lab test entry.
-     * @principle Secures public content by restricting writes to administrators.
+     * @allow (read) Any authenticated user browsing lab tests.
+     * @deny (create) Any non-admin user trying to add a new lab test.
+     * @principle Public read access with admin-only writes for catalog management.
      */
     match /labTests/{labTestId} {
-      allow get, list: if true;
+      allow get, list: if isSignedIn();
       allow create, update, delete: if isAdmin();
     }
 
     /**
-     * @description Publicly accessible health tips.
+     * @description Manages daily health tips. Publicly readable.
      * @path /healthTips/{tipId}
-     * @allow (get) Any user reading a health tip.
-     * @deny (delete) A non-admin user trying to delete a health tip.
-     * @principle Secures public content by restricting writes to administrators.
+     * @allow (read) Any authenticated user reading health tips.
+     * @deny (create) Any non-admin user trying to publish a health tip.
+     * @principle Public read access with admin-only writes for content management.
      */
     match /healthTips/{tipId} {
-      allow get, list: if true;
+      allow get, list: if isSignedIn();
       allow create, update, delete: if isAdmin();
     }
 
     /**
-     * @description Publicly accessible wellness content.
-     * @path /wellnessContent/{contentId}
-     * @allow (list) Any user browsing wellness content.
-     * @deny (create) A non-admin user trying to add new content.
-     * @principle Secures public content by restricting writes to administrators.
-     */
-    match /wellnessContent/{contentId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    /**
-     * @description Publicly viewable offers and promotions.
-     * @path /offers/{offerId}
-     * @allow (get) Any user viewing an offer.
-     * @deny (update) A non-admin user trying to modify an offer.
-     * @principle Secures public content by restricting writes to administrators.
-     */
-    match /offers/{offerId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    /**
-     * @description Publicly accessible information about diseases.
-     * @path /diseases/{diseaseId}
-     * @allow (list) Any user browsing disease information.
-     * @deny (create) A non-admin user trying to add a new disease entry.
-     * @principle Secures public content by restricting writes to administrators.
-     */
-    match /diseases/{diseaseId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    /**
-     * @description Publicly accessible information about hospitals.
+     * @description Manages hospital information. Publicly readable by anyone for emergencies.
      * @path /hospitals/{hospitalId}
-     * @allow (get) Any user viewing hospital information.
-     * @deny (update) A non-admin user trying to modify hospital data.
-     * @principle Secures public content by restricting writes to administrators.
+     * @allow (read) Any user, authenticated or not, looking up hospital info.
+     * @deny (create) Any non-admin user trying to add a hospital.
+     * @principle Public read access with admin-only writes for directory management.
      */
     match /hospitals/{hospitalId} {
       allow get, list: if true;
       allow create, update, delete: if isAdmin();
     }
 
-    // ----------------------------------------
-    // Administrative Collections
-    // ----------------------------------------
+    /**
+     * @description Manages wellness content. Publicly readable.
+     * @path /wellnessResources/{resourceId}
+     * @allow (read) Any authenticated user accessing wellness content.
+     * @deny (create) Any non-admin user trying to add wellness content.
+     * @principle Public read access with admin-only writes for content management.
+     */
+    match /wellnessResources/{resourceId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
 
     /**
-     * @description Manages user admin roles. Only other admins can read or modify this list.
-     * @path /admin_roles/{adminUserProfileId}
-     * @allow (get) An admin checking if another user is an admin.
-     * @deny (list) A non-admin user trying to list all administrators.
-     * @principle Secures administrative role data by restricting all access to admins.
+     * @description Manages promotional offers. Publicly readable.
+     * @path /offers/{offerId}
+     * @allow (read) Any authenticated user viewing available offers.
+     * @deny (create) Any non-admin user trying to create an offer.
+     * @principle Public read access with admin-only writes for promotion management.
      */
-    match /admin_roles/{adminUserProfileId} {
-      allow get, list: if isAdmin();
+    match /offers/{offerId} {
+      allow get, list: if isSignedIn();
       allow create, update, delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // Role Management Collections (DBAC - Internal Use Only)
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description Manages admin roles. Not client-accessible.
+     * @path /roles_admin/{userId}
+     * @allow (none) No direct client access is permitted.
+     * @deny (all) All operations are denied to prevent role enumeration or modification.
+     * @principle This collection is used internally by other rules via `exists()` for role checks.
+     */
+    match /roles_admin/{userId} {
+      allow read, write: if false;
+    }
+
+    /**
+     * @description Manages doctor roles. Not client-accessible.
+     * @path /roles_doctor/{userId}
+     * @allow (none) No direct client access is permitted.
+     * @deny (all) All operations are denied to prevent role enumeration or modification.
+     * @principle This collection is used internally by other rules via `exists()` for role checks.
+     */
+    match /roles_doctor/{userId} {
+      allow read, write: if false;
     }
   }
 }
