@@ -43,12 +43,35 @@ export function getSdks(firebaseApp: FirebaseApp) {
   };
 }
 
-export * from './auth-helpers';
+export {
+    initiateGoogleSignIn,
+    initiateEmailSignUp,
+    initiateEmailSignIn,
+    initiatePasswordReset,
+} from './auth-helpers';
 export { FirebaseProvider } from './provider';
-export * from './hooks';
-export * from './client-provider';
-export * from './firestore/use-collection';
-export * from './firestore/use-doc';
-export * from './non-blocking-updates';
-export * from './errors';
-export * from './error-emitter';
+export type { FirebaseContextState } from './provider';
+export {
+    useFirebase,
+    useAuth,
+    useFirestore,
+    useFirebaseApp,
+    useMemoFirebase,
+    useUser
+} from './hooks';
+export type { FirebaseServicesAndUser, UserHookResult } from './hooks';
+export { FirebaseClientProvider } from './client-provider';
+export { useCollection } from './firestore/use-collection';
+export type { UseCollectionResult, WithId, InternalQuery } from './firestore/use-collection';
+export { useDoc } from './firestore/use-doc';
+export type { UseDocResult } from './firestore/use-doc';
+export {
+    setDocumentNonBlocking,
+    addDocumentNonBlocking,
+    updateDocumentNonBlocking,
+    deleteDocumentNonBlocking
+} from './non-blocking-updates';
+export { FirestorePermissionError } from './errors';
+export type { SecurityRuleContext } from './errors';
+export { errorEmitter } from './error-emitter';
+export type { AppEvents } from './error-emitter';
