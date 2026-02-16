@@ -70,6 +70,7 @@ export default function SignupPage() {
                 title: 'Account created!',
                 description: "We're redirecting you to your dashboard.",
             });
+            setIsSubmitting(false);
         };
 
         const onError = (error: FirebaseError) => {
@@ -96,6 +97,7 @@ export default function SignupPage() {
               title: 'Account created!',
               description: "We're redirecting you to your dashboard.",
           });
+          setIsGoogleSubmitting(false);
       };
 
       const onError = (error: FirebaseError) => {

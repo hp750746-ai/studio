@@ -69,6 +69,7 @@ export default function LoginPage() {
         title: 'Logged in successfully!',
         description: 'You will be redirected shortly.',
       });
+      setIsSubmitting(false);
     };
 
     const onError = (error: FirebaseError) => {
@@ -95,6 +96,7 @@ export default function LoginPage() {
         title: 'Logged in successfully!',
         description: 'You will be redirected shortly.',
       });
+      setIsGoogleSubmitting(false);
     };
 
     const onError = (error: FirebaseError) => {
