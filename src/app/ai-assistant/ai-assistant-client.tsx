@@ -45,11 +45,7 @@ const dietSchema = z.object({
   preferences: z.string().optional(),
 });
 
-const diseaseSchema = z.object({
-  image: z
-    .instanceof(File, { message: "Please upload an image." })
-    .refine((file) => file.size <= 5 * 1024 * 1024, 'Image must be less than 5MB.'),
-});
+const diseaseSchema = z.object({});
 
 
 type AiResult = SymptomCheckerOutput | MedicationSuggestionsOutput | DietarySuggestionsOutput | DiseaseDiagnosisOutput | null;
@@ -143,8 +139,8 @@ export default function AiAssistantClient() {
     if (!imagePreview) {
       toast({
         variant: "destructive",
-        title: "An error occurred",
-        description: "Could not read the image file. Please try selecting it again.",
+        title: "No Image Selected",
+        description: "Please upload an image to analyze.",
       });
       setIsLoading(false);
       return;
@@ -377,56 +373,58 @@ export default function AiAssistantClient() {
             <CardContent>
               <Form {...diseaseForm}>
                 <form onSubmit={diseaseForm.handleSubmit(handleDiseaseSubmit)} className="space-y-6">
-                    <FormField
-                        control={diseaseForm.control}
-                        name="image"
-                        render={({ field: { onChange, value, ...rest } }) => (
-                            <FormItem>
-                                <FormLabel>Upload an image of the condition</FormLabel>
-                                <FormControl>
-                                    <div 
-                                        className="flex items-center justify-center w-full"
-                                        onClick={() => fileInputRef.current?.click()}
-                                    >
-                                        <div className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
-                                            {imagePreview ? (
-                                                <div className="relative w-full h-full">
-                                                    <Image src={imagePreview} alt="Image preview" fill className="object-contain rounded-lg p-2" />
-                                                </div>
-                                            ) : (
-                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                    <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
-                                                    <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                                    <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP (MAX. 5MB)</p>
-                                                </div>
-                                            )}
-                                            <Input 
-                                                type="file" 
-                                                className="hidden"
-                                                ref={fileInputRef}
-                                                accept="image/png, image/jpeg, image/webp"
-                                                onChange={(e) => {
-                                                    const file = e.target.files?.[0];
-                                                    onChange(file);
-                                                    if (file) {
-                                                        const reader = new FileReader();
-                                                        reader.onloadend = () => {
-                                                            setImagePreview(reader.result as string);
-                                                        }
-                                                        reader.readAsDataURL(file);
-                                                    } else {
-                                                        setImagePreview(null);
-                                                    }
-                                                }} 
-                                                {...rest}
-                                            />
+                    <FormItem>
+                        <FormLabel>Upload an image of the condition</FormLabel>
+                        <FormControl>
+                            <div 
+                                className="flex items-center justify-center w-full"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <div className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
+                                    {imagePreview ? (
+                                        <div className="relative w-full h-full">
+                                            <Image src={imagePreview} alt="Image preview" fill className="object-contain rounded-lg p-2" />
                                         </div>
-                                    </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                            <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP (MAX. 5MB)</p>
+                                        </div>
+                                    )}
+                                    <Input 
+                                        type="file" 
+                                        className="hidden"
+                                        ref={fileInputRef}
+                                        accept="image/png, image/jpeg, image/webp"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                if (file.size > 5 * 1024 * 1024) {
+                                                    toast({
+                                                        variant: "destructive",
+                                                        title: "Image too large",
+                                                        description: "Please upload an image smaller than 5MB.",
+                                                    });
+                                                    setImagePreview(null);
+                                                    if (e.target) e.target.value = '';
+                                                    return;
+                                                }
+
+                                                const reader = new FileReader();
+                                                reader.onloadend = () => {
+                                                    setImagePreview(reader.result as string);
+                                                }
+                                                reader.readAsDataURL(file);
+                                            } else {
+                                                setImagePreview(null);
+                                            }
+                                        }} 
+                                    />
+                                </div>
+                            </div>
+                        </FormControl>
+                    </FormItem>
                     <Button type="submit" className="w-full" disabled={isLoading || !imagePreview}>
                         {isLoading && activeTab === 'disease' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
                         Analyze Image
@@ -451,5 +449,3 @@ export default function AiAssistantClient() {
     </div>
   );
 }
-
-    
