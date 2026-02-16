@@ -12,7 +12,7 @@
  * access only to the involved parties.
  *
  * @section Data Structure
- * - /users/{userId}/... : All private data for a single user is nested here.
+ * - /userProfiles/{userId}/... : All private data for a single user is nested here.
  *   This includes their profile, family members, prescriptions, orders, and lab bookings.
  *   Access is controlled by matching the `userId` in the path with the authenticated user's UID.
  * - /doctors, /medicines, /healthTips, etc.: Top-level collections for data that is
@@ -21,8 +21,8 @@
  *   by the participants (patient and doctor) whose UIDs are stored directly on the document.
  *
  * @section Key Security Decisions
- * - User Isolation: Users can only access data within their own `/users/{userId}` tree.
- *   Listing the top-level `/users` collection is explicitly forbidden to protect user privacy.
+ * - User Isolation: Users can only access data within their own `/userProfiles/{userId}` tree.
+ *   Listing the top-level `/userProfiles` collection is explicitly forbidden to protect user privacy.
  * - Role-Based Access Control (RBAC): Administrative and doctor roles are managed via
  *   the /roles_admin and /roles_doctor collections. The existence of a document like
  *   `/roles_admin/{userId}` grants that user admin privileges for writing to public collections.
@@ -40,7 +40,7 @@
  * querying.
  *
  * @section Structural Segregation
- * Private user data (e.g., `/users/{userId}/prescriptions`) is structurally separated
+ * Private user data (e.g., `/userProfiles/{userId}/prescriptions`) is structurally separated
  * from public data (e.g., `/medicines`). This is more secure and performant than using
  * a single collection with a boolean flag, especially for list operations, as it
  * prevents any possibility of accidentally exposing private documents in a public query.
@@ -128,12 +128,12 @@ service cloud.firestore {
 
     /**
      * @description Manages a user's core profile document.
-     * @path /users/{userId}
+     * @path /userProfiles/{userId}
      * @allow (create) A new user creating their own user document.
-     * @deny (list) Any user attempting to list all documents in the `/users` collection.
+     * @deny (list) Any user attempting to list all documents in the `/userProfiles` collection.
      * @principle A user can manage their own root document, but cannot see other users' documents.
      */
-    match /users/{userId} {
+    match /userProfiles/{userId} {
       allow get: if isOwner(userId);
       allow list: if false;
       allow create: if isCreatingOwnUserDoc(userId);
@@ -141,39 +141,26 @@ service cloud.firestore {
       allow delete: if false; // User documents should generally not be deletable by the user.
 
       /**
-       * @description Manages a user's primary health profile.
-       * @path /users/{userId}/patientProfile/{patientProfileId}
-       * @allow (create) An authenticated user creating their own patient profile.
-       * @deny (read) A user trying to read another user's patient profile.
-       * @principle Restricts access to a user's own data tree.
-       */
-      match /patientProfile/{patientProfileId} {
-        allow get, list: if isOwner(userId);
-        allow create: if isCreatingConsistentOwnedDoc(userId);
-        allow update, delete: if isExistingOwner(userId);
-      }
-
-      /**
        * @description Manages health records for a user's family members.
-       * @path /users/{userId}/patientProfile/familyMembers/{familyMemberId}
+       * @path /userProfiles/{userId}/familyMembers/{familyMemberId}
        * @allow (create) A user adding a family member to their own profile.
        * @deny (read) A user trying to read another user's family members.
        * @principle Enforces document ownership within a user's data tree.
        */
-      match /patientProfile/familyMembers/{familyMemberId} {
+      match /familyMembers/{familyMemberId} {
         allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId); // Assumes client sets patientProfileId correctly
+        allow create: if isOwner(userId);
         allow update, delete: if isExistingOwner(userId);
       }
 
       /**
        * @description Manages prescriptions uploaded by a user.
-       * @path /users/{userId}/patientProfile/prescriptions/{prescriptionId}
+       * @path /userProfiles/{userId}/prescriptions/{prescriptionId}
        * @allow (create) A user uploading a prescription to their own profile.
        * @deny (read) A user trying to access another user's prescriptions.
        * @principle Enforces document ownership for sensitive health documents.
        */
-      match /patientProfile/prescriptions/{prescriptionId} {
+      match /prescriptions/{prescriptionId} {
         allow get, list: if isOwner(userId);
         allow create: if isOwner(userId);
         allow update, delete: if isExistingOwner(userId);
@@ -181,12 +168,12 @@ service cloud.firestore {
 
       /**
        * @description Manages a user's lab test bookings.
-       * @path /users/{userId}/patientProfile/labTestBookings/{bookingId}
+       * @path /userProfiles/{userId}/labTestBookings/{bookingId}
        * @allow (create) A user booking a lab test for themselves.
        * @deny (read) A user trying to view another user's lab test bookings.
        * @principle Enforces document ownership within a user's data tree.
        */
-      match /patientProfile/labTestBookings/{bookingId} {
+      match /labTestBookings/{bookingId} {
         allow get, list: if isOwner(userId);
         allow create: if isOwner(userId);
         allow update, delete: if isExistingOwner(userId);
@@ -194,19 +181,19 @@ service cloud.firestore {
 
       /**
        * @description Manages a user's medicine orders.
-       * @path /users/{userId}/patientProfile/orders/{orderId}
+       * @path /userProfiles/{userId}/orders/{orderId}
        * @allow (create) A user placing an order.
        * @deny (read) A user trying to view another user's orders.
        * @principle Enforces document ownership within a user's data tree.
        */
-      match /patientProfile/orders/{orderId} {
+      match /orders/{orderId} {
         allow get, list: if isOwner(userId);
         allow create: if isOwner(userId);
         allow update, delete: if isExistingOwner(userId);
 
         /**
          * @description Manages the items within a user's order.
-         * @path /users/{userId}/patientProfile/orders/{orderId}/orderItems/{orderItemId}
+         * @path /userProfiles/{userId}/orders/{orderId}/orderItems/{orderItemId}
          * @allow (read) A user reading the items in their own order.
          * @deny (read) A user trying to read the items from another user's order.
          * @principle Access is inherited from the parent document's ownership rules.
@@ -220,7 +207,7 @@ service cloud.firestore {
 
       /**
        * @description Manages referral records linked to a user.
-       * @path /users/{userId}/referrals/{referralId}
+       * @path /userProfiles/{userId}/referrals/{referralId}
        * @allow (read) A user reading a referral they sent or received.
        * @deny (read) A user trying to read a referral they are not part of.
        * @principle Shared access model where both participants can read the document.
