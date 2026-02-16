@@ -134,9 +134,9 @@ service cloud.firestore {
      * @principle A user can manage their own root document, but cannot see other users' documents.
      */
     match /userProfiles/{userId} {
-      allow get: if isOwner(userId);
+      allow read: if isOwner(userId);
       allow list: if false;
-      allow create: if isCreatingOwnUserDoc(userId);
+      allow create: if isOwner(userId);
       allow update: if isExistingOwner(userId) && isImmutable('id');
       allow delete: if false; // User documents should generally not be deletable by the user.
 
@@ -405,3 +405,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
