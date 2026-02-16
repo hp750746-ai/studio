@@ -65,3 +65,19 @@ export function initiatePasswordReset(
     .then(onSuccess)
     .catch(onError);
 }
+
+/** Initiate user profile update (non-blocking). */
+export function initiateProfileUpdate(
+  authInstance: Auth,
+  displayName: string,
+  onSuccess: () => void,
+  onError: (error: FirebaseError) => void
+): void {
+  if (!authInstance.currentUser) {
+    onError(new FirebaseError('auth/no-user', 'No user is currently signed in.'));
+    return;
+  }
+  updateProfile(authInstance.currentUser, { displayName })
+    .then(onSuccess)
+    .catch(onError);
+}
