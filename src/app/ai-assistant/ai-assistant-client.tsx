@@ -47,9 +47,8 @@ const dietSchema = z.object({
 
 const diseaseSchema = z.object({
   image: z
-    .any()
-    .refine((file) => file instanceof File, 'Please upload an image.')
-    .refine((file) => file && file.size <= 5 * 1024 * 1024, 'Image must be less than 5MB.'),
+    .instanceof(File, { message: "Please upload an image." })
+    .refine((file) => file.size <= 5 * 1024 * 1024, 'Image must be less than 5MB.'),
 });
 
 
@@ -141,30 +140,27 @@ export default function AiAssistantClient() {
     setIsLoading(true);
     setResult(null);
 
-    const reader = new FileReader();
-    reader.readAsDataURL(values.image);
-    reader.onload = async () => {
-      const photoDataUri = reader.result as string;
-      try {
-        const response = await diagnoseDiseaseFromImage({ photoDataUri });
-        setResult(response);
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "An error occurred",
-          description: "Failed to analyze the image. Please try again.",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    reader.onerror = () => {
-        toast({
-            variant: "destructive",
-            title: "An error occurred",
-            description: "Failed to read the image file.",
-        });
-        setIsLoading(false);
+    if (!imagePreview) {
+      toast({
+        variant: "destructive",
+        title: "An error occurred",
+        description: "Could not read the image file. Please try selecting it again.",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await diagnoseDiseaseFromImage({ photoDataUri: imagePreview });
+      setResult(response);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "An error occurred",
+        description: "Failed to analyze the image. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -455,3 +451,5 @@ export default function AiAssistantClient() {
     </div>
   );
 }
+
+    
