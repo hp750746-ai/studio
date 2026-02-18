@@ -2,11 +2,8 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { 
-  getAuth,
-  Auth
-} from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore'
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -22,6 +19,9 @@ export function initializeFirebase() {
     } catch (e) {
       // Only warn in production because it's normal to use the firebaseConfig to initialize
       // during development
+      if (process.env.NODE_ENV === "production") {
+        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
+      }
       firebaseApp = initializeApp(firebaseConfig);
     }
 
@@ -40,36 +40,11 @@ export function getSdks(firebaseApp: FirebaseApp) {
   };
 }
 
-export {
-    initiateGoogleSignIn,
-    initiateEmailSignUp,
-    initiateEmailSignIn,
-    initiatePasswordReset,
-    initiateProfileUpdate
-} from './auth-helpers';
-export { FirebaseProvider } from './provider';
-export type { FirebaseContextState } from './provider';
-export {
-    useFirebase,
-    useAuth,
-    useFirestore,
-    useFirebaseApp,
-    useMemoFirebase,
-    useUser
-} from './hooks';
-export type { FirebaseServicesAndUser, UserHookResult } from './hooks';
-export { FirebaseClientProvider } from './client-provider';
-export { useCollection } from './firestore/use-collection';
-export type { UseCollectionResult, WithId, InternalQuery } from './firestore/use-collection';
-export { useDoc } from './firestore/use-doc';
-export type { UseDocResult } from './firestore/use-doc';
-export {
-    setDocumentNonBlocking,
-    addDocumentNonBlocking,
-    updateDocumentNonBlocking,
-    deleteDocumentNonBlocking
-} from './non-blocking-updates';
-export { FirestorePermissionError } from './errors';
-export type { SecurityRuleContext } from './errors';
-export { errorEmitter } from './error-emitter';
-export type { AppEvents } from './error-emitter';
+export * from './provider';
+export * from './client-provider';
+export * from './firestore/use-collection';
+export * from './firestore/use-doc';
+export * from './non-blocking-updates';
+export * from './non-blocking-login';
+export * from './errors';
+export * from './error-emitter';

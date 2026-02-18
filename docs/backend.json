@@ -1,31 +1,31 @@
 {
   "entities": {
-    "User": {
+    "UserProfile": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
+      "title": "UserProfile",
       "type": "object",
-      "description": "Represents a user account in the HealthLinke application. This entity stores core user information but excludes sensitive authentication data like passwords, relying on an external authentication system.",
+      "description": "Represents a user's profile information within the HealthLinke application. This includes personal details and preferences.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the User entity."
+          "description": "Unique identifier for the UserProfile entity."
         },
         "firstName": {
           "type": "string",
-          "description": "The first name of the user."
+          "description": "The user's first name."
         },
         "lastName": {
           "type": "string",
-          "description": "The last name of the user."
+          "description": "The user's last name."
         },
         "email": {
           "type": "string",
-          "description": "The email address of the user, used for communication.",
+          "description": "The user's email address, used for communication and login (though authentication is external).",
           "format": "email"
         },
-        "phone": {
+        "phoneNumber": {
           "type": "string",
-          "description": "The primary phone number of the user."
+          "description": "The user's primary phone number, used for contact and notifications."
         },
         "dateOfBirth": {
           "type": "string",
@@ -34,25 +34,27 @@
         },
         "gender": {
           "type": "string",
-          "description": "The gender of the user."
+          "description": "The user's gender."
         },
-        "profileImageUrl": {
-          "type": "string",
-          "description": "URL to the user's profile picture.",
-          "format": "uri"
+        "addressIds": {
+          "type": "array",
+          "description": "References to the user's saved addresses. (Relationship: UserProfile 1:N Address)",
+          "items": {
+            "type": "string"
+          }
         },
-        "preferredLanguage": {
+        "languagePreference": {
           "type": "string",
-          "description": "The user's preferred language for the application interface (e.g., 'en' for English, 'hi' for Hindi)."
+          "description": "The user's preferred language for the application (e.g., 'en', 'hi', 'hinglish')."
         },
         "createdAt": {
           "type": "string",
-          "description": "Timestamp when the user account was created.",
+          "description": "Timestamp when the user profile was created.",
           "format": "date-time"
         },
         "updatedAt": {
           "type": "string",
-          "description": "Timestamp of the last update to the user account details.",
+          "description": "Timestamp when the user profile was last updated.",
           "format": "date-time"
         }
       },
@@ -61,86 +63,587 @@
         "firstName",
         "lastName",
         "email",
-        "phone",
+        "phoneNumber",
         "createdAt"
       ]
     },
-    "PatientProfile": {
+    "Address": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "PatientProfile",
+      "title": "Address",
       "type": "object",
-      "description": "Stores detailed health-related information for a specific user, acting as their primary health record.",
+      "description": "Represents a physical address associated with a user or pharmacy.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the PatientProfile entity."
+          "description": "Unique identifier for the Address entity."
         },
         "userId": {
           "type": "string",
-          "description": "Reference to the User account associated with this patient profile. (Relationship: User 1:N PatientProfile)"
+          "description": "Reference to the UserProfile who owns this address. (Relationship: UserProfile 1:N Address)"
         },
-        "bloodGroup": {
+        "addressLine1": {
           "type": "string",
-          "description": "The patient's blood group (e.g., 'A+', 'O-')."
+          "description": "The first line of the street address."
         },
-        "heightCm": {
-          "type": "number",
-          "description": "The patient's height in centimeters."
-        },
-        "weightKg": {
-          "type": "number",
-          "description": "The patient's weight in kilograms."
-        },
-        "medicalConditions": {
-          "type": "array",
-          "description": "A list of medical conditions or chronic diseases the patient has.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "allergies": {
-          "type": "array",
-          "description": "A list of known allergies the patient has.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "currentMedications": {
-          "type": "array",
-          "description": "A list of medications the patient is currently taking.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "emergencyContactName": {
+        "addressLine2": {
           "type": "string",
-          "description": "The name of an emergency contact person for the patient."
+          "description": "The second line of the street address (optional)."
         },
-        "emergencyContactPhone": {
+        "city": {
           "type": "string",
-          "description": "The phone number of the emergency contact person."
+          "description": "The city of the address."
+        },
+        "state": {
+          "type": "string",
+          "description": "The state or region of the address."
+        },
+        "postalCode": {
+          "type": "string",
+          "description": "The postal code or zip code of the address."
+        },
+        "country": {
+          "type": "string",
+          "description": "The country of the address."
+        },
+        "addressType": {
+          "type": "string",
+          "description": "The type of address (e.g., 'Home', 'Work', 'Delivery', 'Pharmacy')."
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Indicates if this is the user's default address."
         }
       },
       "required": [
         "id",
         "userId",
-        "emergencyContactName",
-        "emergencyContactPhone"
+        "addressLine1",
+        "city",
+        "state",
+        "postalCode",
+        "country",
+        "addressType"
+      ]
+    },
+    "Doctor": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Doctor",
+      "type": "object",
+      "description": "Represents a verified doctor available for consultation.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Doctor entity."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The doctor's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The doctor's last name."
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "URL to the doctor's profile photo.",
+          "format": "uri"
+        },
+        "degree": {
+          "type": "string",
+          "description": "The doctor's primary medical degree (e.g., 'MBBS', 'MD')."
+        },
+        "experienceYears": {
+          "type": "number",
+          "description": "Number of years of experience the doctor has."
+        },
+        "specializations": {
+          "type": "array",
+          "description": "A list of medical specializations the doctor holds (e.g., 'Cardiology', 'Pediatrics').",
+          "items": {
+            "type": "string"
+          }
+        },
+        "consultationFee": {
+          "type": "number",
+          "description": "The standard fee for a consultation with this doctor."
+        },
+        "consultationTypes": {
+          "type": "array",
+          "description": "Types of consultations offered by the doctor (e.g., 'Chat', 'Audio Call', 'Video Call').",
+          "items": {
+            "type": "string"
+          }
+        },
+        "averageRating": {
+          "type": "number",
+          "description": "The average rating received by the doctor from patients."
+        },
+        "totalReviews": {
+          "type": "number",
+          "description": "The total number of reviews received by the doctor."
+        },
+        "isVerified": {
+          "type": "boolean",
+          "description": "Indicates if the doctor's credentials have been verified."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief biographical description or professional summary of the doctor."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The doctor's contact phone number."
+        },
+        "email": {
+          "type": "string",
+          "description": "The doctor's professional email address (optional).",
+          "format": "email"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "degree",
+        "experienceYears",
+        "specializations",
+        "consultationFee",
+        "consultationTypes",
+        "isVerified"
+      ]
+    },
+    "Medicine": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Medicine",
+      "type": "object",
+      "description": "Represents a medicine product available in the online store.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Medicine entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The brand or trade name of the medicine."
+        },
+        "genericName": {
+          "type": "string",
+          "description": "The generic or chemical name of the medicine, used for suggestions."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the medicine, including uses, dosage, and warnings."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL to the medicine's product image.",
+          "format": "uri"
+        },
+        "price": {
+          "type": "number",
+          "description": "The base price of the medicine."
+        },
+        "discountPercentage": {
+          "type": "number",
+          "description": "The percentage discount applicable to the medicine."
+        },
+        "categoryIds": {
+          "type": "array",
+          "description": "References to categories this medicine belongs to (e.g., 'Tablets', 'Ayurvedic'). (Relationship: Medicine N:N Category)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "strength": {
+          "type": "string",
+          "description": "The strength of the medicine (e.g., '500mg', '10ml')."
+        },
+        "form": {
+          "type": "string",
+          "description": "The form of the medicine (e.g., 'Tablet', 'Syrup', 'Injection')."
+        },
+        "manufacturer": {
+          "type": "string",
+          "description": "The manufacturer of the medicine."
+        },
+        "isPrescriptionRequired": {
+          "type": "boolean",
+          "description": "Indicates if a prescription is required to purchase this medicine."
+        },
+        "stockQuantity": {
+          "type": "number",
+          "description": "The current quantity of the medicine available in stock."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "genericName",
+        "price",
+        "categoryIds",
+        "isPrescriptionRequired",
+        "stockQuantity"
+      ]
+    },
+    "Category": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Category",
+      "type": "object",
+      "description": "Represents a categorization for various items like medicines, lab tests, or wellness content.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Category entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the category (e.g., 'Tablets', 'Blood Test', 'Yoga Videos')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of what the category encompasses."
+        },
+        "parentCategoryId": {
+          "type": "string",
+          "description": "Optional reference to a parent category, enabling hierarchical categorization. (Relationship: Category 1:N Category - self-referencing)"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "Order": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Order",
+      "type": "object",
+      "description": "Represents a user's order, which can include medicines, lab tests, or both.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Order entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile who placed the order. (Relationship: UserProfile 1:N Order)"
+        },
+        "orderDate": {
+          "type": "string",
+          "description": "The date and time when the order was placed.",
+          "format": "date-time"
+        },
+        "deliveryAddressId": {
+          "type": "string",
+          "description": "Reference to the Address where the order should be delivered or sample collected. (Relationship: Address 1:N Order)"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the order (e.g., 'Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled')."
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "The total monetary amount of the order, including discounts and delivery charges."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "The method of payment used for the order (e.g., 'COD', 'Online')."
+        },
+        "paymentStatus": {
+          "type": "string",
+          "description": "The current payment status of the order (e.g., 'Paid', 'Unpaid', 'Refunded')."
+        },
+        "deliveryPreference": {
+          "type": "string",
+          "description": "The user's preferred delivery speed (e.g., 'Same-day', 'Next-day')."
+        },
+        "trackingNumber": {
+          "type": "string",
+          "description": "A unique tracking number for the delivery of the order."
+        },
+        "estimatedDeliveryDate": {
+          "type": "string",
+          "description": "The estimated date and time for order delivery.",
+          "format": "date-time"
+        },
+        "prescriptionId": {
+          "type": "string",
+          "description": "Optional reference to a Prescription associated with this order. (Relationship: Prescription 1:N Order)"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "orderDate",
+        "deliveryAddressId",
+        "status",
+        "totalAmount",
+        "paymentMethod",
+        "paymentStatus"
+      ]
+    },
+    "OrderItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OrderItem",
+      "type": "object",
+      "description": "Represents an individual item within an Order, which can be a medicine or a lab test.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the OrderItem entity."
+        },
+        "orderId": {
+          "type": "string",
+          "description": "Reference to the parent Order. (Relationship: Order 1:N OrderItem)"
+        },
+        "medicineId": {
+          "type": "string",
+          "description": "Reference to the Medicine if this item is a medicine. (Relationship: Medicine 1:N OrderItem)"
+        },
+        "labTestId": {
+          "type": "string",
+          "description": "Reference to the LabTest if this item is a lab test. (Relationship: LabTest 1:N OrderItem)"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "The quantity of the medicine or lab test booked."
+        },
+        "unitPrice": {
+          "type": "number",
+          "description": "The price of a single unit of the item at the time of order."
+        },
+        "subtotal": {
+          "type": "number",
+          "description": "The total price for this specific order item (quantity * unitPrice)."
+        }
+      },
+      "required": [
+        "id",
+        "orderId",
+        "quantity",
+        "unitPrice",
+        "subtotal"
+      ]
+    },
+    "Prescription": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Prescription",
+      "type": "object",
+      "description": "Represents an uploaded prescription from a user or one generated during a doctor consultation.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Prescription entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile who owns this prescription. (Relationship: UserProfile 1:N Prescription)"
+        },
+        "uploadDate": {
+          "type": "string",
+          "description": "The date and time when the prescription was uploaded.",
+          "format": "date-time"
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL to the image or PDF of the prescription document.",
+          "format": "uri"
+        },
+        "doctorNote": {
+          "type": "string",
+          "description": "Any notes added by a doctor or staff related to this prescription."
+        },
+        "associatedOrderId": {
+          "type": "string",
+          "description": "Optional reference to an Order that utilized this prescription. (Relationship: Order 1:N Prescription)"
+        },
+        "status": {
+          "type": "string",
+          "description": "The processing status of the prescription (e.g., 'Pending Review', 'Approved', 'Rejected')."
+        },
+        "expirationDate": {
+          "type": "string",
+          "description": "The expiration date of the prescription, if applicable.",
+          "format": "date"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "uploadDate",
+        "imageUrl",
+        "status"
+      ]
+    },
+    "LabTest": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "LabTest",
+      "type": "object",
+      "description": "Defines a specific lab test offered by HealthLinke.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the LabTest entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the lab test (e.g., 'Blood Test', 'Sugar Test')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the lab test, its purpose, and what it measures."
+        },
+        "price": {
+          "type": "number",
+          "description": "The price of the lab test."
+        },
+        "preparationInstructions": {
+          "type": "string",
+          "description": "Instructions for the patient to prepare for the test (e.g., 'fasting required')."
+        },
+        "reportDeliveryTime": {
+          "type": "string",
+          "description": "The estimated time for report delivery (e.g., '24 hours', '3 days')."
+        },
+        "homeSampleCollectionAvailable": {
+          "type": "boolean",
+          "description": "Indicates if home sample collection is available for this test."
+        },
+        "categoryIds": {
+          "type": "array",
+          "description": "References to categories this lab test belongs to (e.g., 'Blood Tests', 'Full Body Checkup'). (Relationship: LabTest N:N Category)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "price",
+        "homeSampleCollectionAvailable"
+      ]
+    },
+    "LabTestBooking": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "LabTestBooking",
+      "type": "object",
+      "description": "Represents a specific instance of a user booking a lab test.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the LabTestBooking entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile who booked the test. (Relationship: UserProfile 1:N LabTestBooking)"
+        },
+        "labTestId": {
+          "type": "string",
+          "description": "Reference to the LabTest that was booked. (Relationship: LabTest 1:N LabTestBooking)"
+        },
+        "bookingDate": {
+          "type": "string",
+          "description": "The date and time when the lab test was booked.",
+          "format": "date-time"
+        },
+        "preferredCollectionDate": {
+          "type": "string",
+          "description": "The user's preferred date and time for sample collection.",
+          "format": "date-time"
+        },
+        "collectionAddressId": {
+          "type": "string",
+          "description": "Reference to the Address for home sample collection. (Relationship: Address 1:N LabTestBooking)"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the lab test booking (e.g., 'Booked', 'Sample Collected', 'Report Ready', 'Cancelled')."
+        },
+        "reportUrl": {
+          "type": "string",
+          "description": "URL to the downloadable PDF report of the lab test results.",
+          "format": "uri"
+        },
+        "orderId": {
+          "type": "string",
+          "description": "Optional reference to an Order if this booking is part of a larger order. (Relationship: Order 1:N LabTestBooking)"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "labTestId",
+        "bookingDate",
+        "preferredCollectionDate",
+        "collectionAddressId",
+        "status"
+      ]
+    },
+    "HealthRecord": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "HealthRecord",
+      "type": "object",
+      "description": "Stores a historical health record entry for a user or family member, such as a prescription, test report, or doctor's note.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the HealthRecord entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile this health record belongs to. (Relationship: UserProfile 1:N HealthRecord)"
+        },
+        "familyMemberId": {
+          "type": "string",
+          "description": "Optional reference to a FamilyMember if this record belongs to one. (Relationship: FamilyMember 1:N HealthRecord)"
+        },
+        "recordDate": {
+          "type": "string",
+          "description": "The date and time when this health record entry was created or pertains to.",
+          "format": "date-time"
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of health record (e.g., 'Prescription', 'Lab Report', 'Doctor Note', 'Vaccination')."
+        },
+        "documentUrl": {
+          "type": "string",
+          "description": "URL to the digital document (e.g., PDF, image) associated with this record.",
+          "format": "uri"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Free-form text notes related to this health record entry."
+        },
+        "associatedEntityId": {
+          "type": "string",
+          "description": "Reference to the original entity that generated this record (e.g., Prescription.id, LabTestBooking.id, DoctorConsultation.id)."
+        },
+        "associatedEntityType": {
+          "type": "string",
+          "description": "The type of the associated entity (e.g., 'Prescription', 'LabTestBooking', 'DoctorConsultation')."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "recordDate",
+        "type"
       ]
     },
     "FamilyMember": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "FamilyMember",
       "type": "object",
-      "description": "Allows a primary patient profile to manage health records for other family members.",
+      "description": "Represents a family member whose health profile is managed by a primary user.",
       "properties": {
         "id": {
           "type": "string",
           "description": "Unique identifier for the FamilyMember entity."
         },
-        "patientProfileId": {
+        "userId": {
           "type": "string",
-          "description": "Reference to the primary PatientProfile managing this family member's record. (Relationship: PatientProfile 1:N FamilyMember)"
+          "description": "Reference to the primary UserProfile managing this family member. (Relationship: UserProfile 1:N FamilyMember)"
         },
         "firstName": {
           "type": "string",
@@ -152,621 +655,162 @@
         },
         "relationship": {
           "type": "string",
-          "description": "The relationship of the family member to the primary patient (e.g., 'spouse', 'child', 'parent')."
+          "description": "The relationship of the family member to the primary user (e.g., 'Spouse', 'Child', 'Parent')."
         },
         "dateOfBirth": {
           "type": "string",
-          "description": "The family member's date of birth.",
+          "description": "The date of birth of the family member.",
           "format": "date"
         },
         "gender": {
           "type": "string",
           "description": "The gender of the family member."
-        },
-        "medicalConditions": {
-          "type": "array",
-          "description": "A list of medical conditions or chronic diseases the family member has.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "allergies": {
-          "type": "array",
-          "description": "A list of known allergies the family member has.",
-          "items": {
-            "type": "string"
-          }
         }
       },
       "required": [
         "id",
-        "patientProfileId",
+        "userId",
         "firstName",
-        "lastName",
         "relationship",
-        "dateOfBirth"
-      ]
-    },
-    "Doctor": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Doctor",
-      "type": "object",
-      "description": "Contains detailed profiles for doctors available for consultation on the platform.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Doctor entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the User account associated with this doctor profile, if doctors also have user accounts. (Relationship: User 1:N Doctor)"
-        },
-        "firstName": {
-          "type": "string",
-          "description": "The first name of the doctor."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "The last name of the doctor."
-        },
-        "profileImageUrl": {
-          "type": "string",
-          "description": "URL to the doctor's profile picture.",
-          "format": "uri"
-        },
-        "degree": {
-          "type": "string",
-          "description": "The highest medical degree obtained by the doctor (e.g., 'MBBS', 'MD')."
-        },
-        "specialization": {
-          "type": "string",
-          "description": "The doctor's primary area of medical specialization (e.g., 'Cardiologist', 'Pediatrician')."
-        },
-        "experienceYears": {
-          "type": "number",
-          "description": "The number of years of experience the doctor has."
-        },
-        "consultationFees": {
-          "type": "number",
-          "description": "The standard consultation fees charged by the doctor."
-        },
-        "about": {
-          "type": "string",
-          "description": "A brief biography or description of the doctor's practice."
-        },
-        "clinicAddress": {
-          "type": "string",
-          "description": "The physical address of the doctor's clinic or primary practice location."
-        },
-        "isVerified": {
-          "type": "boolean",
-          "description": "Indicates if the doctor's credentials and profile have been verified by the platform."
-        },
-        "consultationTypes": {
-          "type": "array",
-          "description": "A list of consultation types offered by the doctor (e.g., 'chat', 'audio', 'video').",
-          "items": {
-            "type": "string"
-          }
-        },
-        "averageRating": {
-          "type": "number",
-          "description": "The average rating received by the doctor from patients."
-        },
-        "totalRatings": {
-          "type": "number",
-          "description": "The total number of ratings submitted for the doctor."
-        }
-      },
-      "required": [
-        "id",
-        "firstName",
-        "lastName",
-        "degree",
-        "specialization",
-        "experienceYears",
-        "consultationFees",
-        "isVerified"
-      ]
-    },
-    "MedicineCategory": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "MedicineCategory",
-      "type": "object",
-      "description": "Organizes medicines into logical categories for browsing in the online store.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the MedicineCategory entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the medicine category (e.g., 'Tablets', 'Syrup', 'Ayurvedic')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A brief description of the medicine category."
-        }
-      },
-      "required": [
-        "id",
-        "name"
-      ]
-    },
-    "Medicine": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Medicine",
-      "type": "object",
-      "description": "Details about individual medicines available for purchase in the online store.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Medicine entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The brand name or common name of the medicine."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of the medicine, including its uses and composition."
-        },
-        "categoryId": {
-          "type": "string",
-          "description": "Reference to the category this medicine belongs to. (Relationship: MedicineCategory 1:N Medicine)"
-        },
-        "price": {
-          "type": "number",
-          "description": "The standard selling price of the medicine."
-        },
-        "discountPercentage": {
-          "type": "number",
-          "description": "The percentage discount applied to the medicine, if any."
-        },
-        "imageUrl": {
-          "type": "string",
-          "description": "URL to an image of the medicine.",
-          "format": "uri"
-        },
-        "isPrescriptionRequired": {
-          "type": "boolean",
-          "description": "Indicates if a prescription is mandatory to purchase this medicine."
-        },
-        "genericAlternativeMedicineIds": {
-          "type": "array",
-          "description": "References to other Medicine entities that are generic alternatives to this medicine. (Relationship: Medicine N:N Medicine)",
-          "items": {
-            "type": "string"
-          }
-        },
-        "manufacturer": {
-          "type": "string",
-          "description": "The pharmaceutical manufacturer of the medicine."
-        },
-        "packagingType": {
-          "type": "string",
-          "description": "The type of packaging (e.g., 'strip', 'bottle', 'tube')."
-        },
-        "dosageForm": {
-          "type": "string",
-          "description": "The form of the medicine (e.g., 'tablet', 'syrup', 'injection')."
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "categoryId",
-        "price",
-        "isPrescriptionRequired"
-      ]
-    },
-    "Prescription": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Prescription",
-      "type": "object",
-      "description": "Stores details of prescriptions uploaded by users, including images and refill reminders.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Prescription entity."
-        },
-        "patientProfileId": {
-          "type": "string",
-          "description": "Reference to the PatientProfile who uploaded this prescription. (Relationship: PatientProfile 1:N Prescription)"
-        },
-        "uploadDate": {
-          "type": "string",
-          "description": "The date and time when the prescription was uploaded.",
-          "format": "date-time"
-        },
-        "imageUrl": {
-          "type": "string",
-          "description": "URL to the image of the prescription document.",
-          "format": "uri"
-        },
-        "voiceNoteUrl": {
-          "type": "string",
-          "description": "URL to an uploaded voice note containing prescription details.",
-          "format": "uri"
-        },
-        "notes": {
-          "type": "string",
-          "description": "Any additional notes or instructions related to the prescription."
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the prescription (e.g., 'pending review', 'approved', 'rejected')."
-        },
-        "issuedByDoctorId": {
-          "type": "string",
-          "description": "Reference to the Doctor who issued this prescription, if known. (Relationship: Doctor 1:N Prescription)"
-        },
-        "refillReminderDate": {
-          "type": "string",
-          "description": "The date when a refill reminder should be sent to the patient.",
-          "format": "date"
-        }
-      },
-      "required": [
-        "id",
-        "patientProfileId",
-        "uploadDate",
-        "status"
+        "dateOfBirth",
+        "gender"
       ]
     },
     "DoctorConsultation": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "DoctorConsultation",
       "type": "object",
-      "description": "Records details of a booked or completed doctor consultation, including type, time, and fees.",
+      "description": "Records details of a consultation session between a user and a doctor.",
       "properties": {
         "id": {
           "type": "string",
           "description": "Unique identifier for the DoctorConsultation entity."
         },
-        "patientProfileId": {
+        "userId": {
           "type": "string",
-          "description": "Reference to the PatientProfile participating in the consultation. (Relationship: PatientProfile 1:N DoctorConsultation)"
+          "description": "Reference to the UserProfile who participated in the consultation. (Relationship: UserProfile 1:N DoctorConsultation)"
         },
         "doctorId": {
           "type": "string",
-          "description": "Reference to the Doctor providing the consultation. (Relationship: Doctor 1:N DoctorConsultation)"
+          "description": "Reference to the Doctor who provided the consultation. (Relationship: Doctor 1:N DoctorConsultation)"
+        },
+        "timeSlotId": {
+          "type": "string",
+          "description": "Reference to the TimeSlot booked for this consultation. (Relationship: TimeSlot 1:N DoctorConsultation)"
         },
         "consultationDate": {
           "type": "string",
-          "description": "The date of the consultation.",
-          "format": "date"
+          "description": "The date and time when the consultation occurred.",
+          "format": "date-time"
         },
-        "consultationTimeSlot": {
+        "consultationType": {
           "type": "string",
-          "description": "The specific time slot booked for the consultation (e.g., '10:00-10:30')."
-        },
-        "type": {
-          "type": "string",
-          "description": "The type of consultation (e.g., 'chat', 'audio', 'video')."
+          "description": "The type of consultation (e.g., 'Chat', 'Audio Call', 'Video Call')."
         },
         "status": {
           "type": "string",
-          "description": "The current status of the consultation (e.g., 'booked', 'ongoing', 'completed', 'cancelled')."
+          "description": "The status of the consultation (e.g., 'Booked', 'Completed', 'Cancelled')."
         },
         "feesPaid": {
           "type": "number",
-          "description": "The fees paid for this consultation."
+          "description": "The amount of fees paid for this consultation."
         },
-        "followUpStatus": {
-          "type": "string",
-          "description": "Indicates the status of a follow-up (e.g., 'none', 'scheduled', 'completed')."
+        "isFollowUp": {
+          "type": "boolean",
+          "description": "Indicates if this consultation is a follow-up session."
         },
-        "followUpFees": {
+        "followUpFee": {
           "type": "number",
-          "description": "Fees for a follow-up consultation, if applicable."
+          "description": "The fee paid for a follow-up consultation, if applicable."
         },
-        "consultationLink": {
+        "consultationSummary": {
           "type": "string",
-          "description": "URL for joining a video or audio call consultation.",
+          "description": "A summary or notes from the doctor about the consultation."
+        },
+        "prescriptionId": {
+          "type": "string",
+          "description": "Optional reference to a new Prescription issued during this consultation. (Relationship: Prescription 1:N DoctorConsultation)"
+        },
+        "recordingUrl": {
+          "type": "string",
+          "description": "URL to the recording of the audio/video call, if applicable.",
           "format": "uri"
+        },
+        "chatTranscriptUrl": {
+          "type": "string",
+          "description": "URL to the transcript of the chat consultation, if applicable.",
+          "format": "uri"
+        },
+        "ratingGiven": {
+          "type": "number",
+          "description": "The rating given by the user for this consultation (1-5)."
+        },
+        "reviewText": {
+          "type": "string",
+          "description": "The review text provided by the user for this consultation."
         }
       },
       "required": [
         "id",
-        "patientProfileId",
+        "userId",
         "doctorId",
+        "timeSlotId",
         "consultationDate",
-        "consultationTimeSlot",
-        "type",
+        "consultationType",
         "status",
         "feesPaid"
       ]
     },
-    "DoctorNote": {
+    "TimeSlot": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "DoctorNote",
+      "title": "TimeSlot",
       "type": "object",
-      "description": "Captures notes made by a doctor during or after a consultation for a patient's health record.",
+      "description": "Represents an available time slot for a doctor's consultation.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the DoctorNote entity."
-        },
-        "consultationId": {
-          "type": "string",
-          "description": "Reference to the specific DoctorConsultation this note belongs to. (Relationship: DoctorConsultation 1:N DoctorNote)"
+          "description": "Unique identifier for the TimeSlot entity."
         },
         "doctorId": {
           "type": "string",
-          "description": "Reference to the Doctor who created this note. (Relationship: Doctor 1:N DoctorNote)"
+          "description": "Reference to the Doctor to whom this time slot belongs. (Relationship: Doctor 1:N TimeSlot)"
         },
-        "patientProfileId": {
+        "startTime": {
           "type": "string",
-          "description": "Reference to the PatientProfile this note is about. (Relationship: PatientProfile 1:N DoctorNote)"
-        },
-        "noteContent": {
-          "type": "string",
-          "description": "The actual content of the doctor's notes."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the doctor's note was created.",
+          "description": "The starting date and time of the available slot.",
           "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "description": "The ending date and time of the available slot.",
+          "format": "date-time"
+        },
+        "isBooked": {
+          "type": "boolean",
+          "description": "Indicates if this time slot has been booked by a user."
+        },
+        "bookedByUserId": {
+          "type": "string",
+          "description": "Optional reference to the UserProfile who booked this slot. (Relationship: UserProfile 1:N TimeSlot)"
+        },
+        "consultationId": {
+          "type": "string",
+          "description": "Optional reference to the DoctorConsultation that was created using this slot. (Relationship: DoctorConsultation 1:N TimeSlot)"
         }
       },
       "required": [
         "id",
-        "consultationId",
         "doctorId",
-        "patientProfileId",
-        "noteContent",
-        "createdAt"
-      ]
-    },
-    "LabTestCategory": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "LabTestCategory",
-      "type": "object",
-      "description": "Organizes lab tests into categories for easier browsing and selection.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the LabTestCategory entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the lab test category (e.g., 'Blood Test', 'Sugar Test', 'Full Body Checkup')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A brief description of the lab test category."
-        }
-      },
-      "required": [
-        "id",
-        "name"
-      ]
-    },
-    "LabTest": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "LabTest",
-      "type": "object",
-      "description": "Defines individual lab tests available for booking, including their details and requirements.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the LabTest entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the lab test (e.g., 'Complete Blood Count', 'Fasting Blood Sugar')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of the lab test and what it measures."
-        },
-        "categoryId": {
-          "type": "string",
-          "description": "Reference to the category this lab test belongs to. (Relationship: LabTestCategory 1:N LabTest)"
-        },
-        "price": {
-          "type": "number",
-          "description": "The cost of the lab test."
-        },
-        "homeSampleCollectionAvailable": {
-          "type": "boolean",
-          "description": "Indicates if home sample collection is an option for this test."
-        },
-        "preparationInstructions": {
-          "type": "string",
-          "description": "Instructions for the patient to prepare for the test (e.g., fasting requirements)."
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "categoryId",
-        "price"
-      ]
-    },
-    "LabTestBooking": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "LabTestBooking",
-      "type": "object",
-      "description": "Records the details of a patient's booking for one or more lab tests, including collection and report information.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the LabTestBooking entity."
-        },
-        "patientProfileId": {
-          "type": "string",
-          "description": "Reference to the PatientProfile who made the booking. (Relationship: PatientProfile 1:N LabTestBooking)"
-        },
-        "labTestIds": {
-          "type": "array",
-          "description": "References to the LabTest entities included in this booking. (Relationship: LabTest N:N LabTestBooking)",
-          "items": {
-            "type": "string"
-          }
-        },
-        "bookingDate": {
-          "type": "string",
-          "description": "The date when the lab test booking was made.",
-          "format": "date-time"
-        },
-        "sampleCollectionDate": {
-          "type": "string",
-          "description": "The scheduled date for sample collection.",
-          "format": "date"
-        },
-        "sampleCollectionTimeSlot": {
-          "type": "string",
-          "description": "The scheduled time slot for sample collection."
-        },
-        "collectionAddress": {
-          "type": "string",
-          "description": "The address where the sample is to be collected (for home collection)."
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the lab test booking (e.g., 'booked', 'sample_collected', 'processing', 'report_ready', 'cancelled')."
-        },
-        "totalFees": {
-          "type": "number",
-          "description": "The total amount charged for all tests in this booking."
-        },
-        "paymentStatus": {
-          "type": "string",
-          "description": "The payment status for the booking (e.g., 'pending', 'paid', 'failed')."
-        },
-        "reportDownloadUrl": {
-          "type": "string",
-          "description": "URL to download the test report in PDF format once ready.",
-          "format": "uri"
-        },
-        "isHomeCollection": {
-          "type": "boolean",
-          "description": "Indicates if the booking is for home sample collection."
-        }
-      },
-      "required": [
-        "id",
-        "patientProfileId",
-        "labTestIds",
-        "bookingDate",
-        "totalFees",
-        "paymentStatus",
-        "status"
-      ]
-    },
-    "Order": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Order",
-      "type": "object",
-      "description": "Represents a customer order placed through the online medicine store.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Order entity."
-        },
-        "patientProfileId": {
-          "type": "string",
-          "description": "Reference to the PatientProfile who placed the order. (Relationship: PatientProfile 1:N Order)"
-        },
-        "orderDate": {
-          "type": "string",
-          "description": "The date and time when the order was placed.",
-          "format": "date-time"
-        },
-        "totalAmount": {
-          "type": "number",
-          "description": "The total monetary amount of the order after discounts and taxes."
-        },
-        "discountAmount": {
-          "type": "number",
-          "description": "The total discount applied to the order."
-        },
-        "deliveryAddress": {
-          "type": "string",
-          "description": "The full delivery address for the order."
-        },
-        "deliveryType": {
-          "type": "string",
-          "description": "The selected delivery speed (e.g., 'same-day', 'next-day')."
-        },
-        "paymentMethod": {
-          "type": "string",
-          "description": "The payment method used for the order (e.g., 'COD' for Cash on Delivery, 'online')."
-        },
-        "paymentStatus": {
-          "type": "string",
-          "description": "The current payment status of the order (e.g., 'pending', 'paid', 'failed')."
-        },
-        "orderStatus": {
-          "type": "string",
-          "description": "The current fulfillment status of the order (e.g., 'pending', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled')."
-        },
-        "trackingNumber": {
-          "type": "string",
-          "description": "A unique number for tracking the delivery of the order."
-        },
-        "prescriptionId": {
-          "type": "string",
-          "description": "Reference to the Prescription entity required for this order, if any. (Relationship: Prescription 1:N Order)"
-        }
-      },
-      "required": [
-        "id",
-        "patientProfileId",
-        "orderDate",
-        "totalAmount",
-        "deliveryAddress",
-        "paymentMethod",
-        "paymentStatus",
-        "orderStatus"
-      ]
-    },
-    "OrderItem": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "OrderItem",
-      "type": "object",
-      "description": "Details individual items included within a specific customer order.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the OrderItem entity."
-        },
-        "orderId": {
-          "type": "string",
-          "description": "Reference to the Order this item belongs to. (Relationship: Order 1:N OrderItem)"
-        },
-        "medicineId": {
-          "type": "string",
-          "description": "Reference to the Medicine entity being ordered. (Relationship: Medicine 1:N OrderItem)"
-        },
-        "quantity": {
-          "type": "number",
-          "description": "The quantity of the medicine ordered."
-        },
-        "unitPriceAtTimeOfOrder": {
-          "type": "number",
-          "description": "The unit price of the medicine at the time the order was placed."
-        },
-        "itemDiscountAtTimeOfOrder": {
-          "type": "number",
-          "description": "The discount applied to this specific item at the time of order."
-        }
-      },
-      "required": [
-        "id",
-        "orderId",
-        "medicineId",
-        "quantity",
-        "unitPriceAtTimeOfOrder"
+        "startTime",
+        "endTime",
+        "isBooked"
       ]
     },
     "HealthTip": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "HealthTip",
       "type": "object",
-      "description": "Stores daily health tips and wellness advice for users.",
+      "description": "Stores daily health tips or wellness advice for users.",
       "properties": {
         "id": {
           "type": "string",
@@ -778,192 +822,97 @@
         },
         "content": {
           "type": "string",
-          "description": "The full content or text of the health tip."
+          "description": "The detailed content or advice of the health tip."
         },
         "imageUrl": {
           "type": "string",
-          "description": "URL to an image associated with the health tip.",
+          "description": "Optional URL to an image associated with the health tip.",
           "format": "uri"
         },
         "publishDate": {
           "type": "string",
-          "description": "The date when the health tip was published or made active.",
-          "format": "date"
+          "description": "The date and time when the health tip was published.",
+          "format": "date-time"
         },
-        "tags": {
-          "type": "array",
-          "description": "Keywords or tags to categorize the health tip (e.g., 'diet', 'exercise', 'mental health').",
-          "items": {
-            "type": "string"
-          }
+        "category": {
+          "type": "string",
+          "description": "The category of the health tip (e.g., 'Diet', 'Exercise', 'Mental Health')."
         }
       },
       "required": [
         "id",
         "title",
         "content",
-        "publishDate"
+        "publishDate",
+        "category"
       ]
     },
-    "Hospital": {
+    "Coupon": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Hospital",
+      "title": "Coupon",
       "type": "object",
-      "description": "Information about hospitals, primarily for emergency services (nearest hospital feature).",
+      "description": "Represents promotional coupons or offers for medicines or services.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Hospital entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the hospital."
-        },
-        "address": {
-          "type": "string",
-          "description": "The full postal address of the hospital."
-        },
-        "latitude": {
-          "type": "number",
-          "description": "The geographical latitude coordinate of the hospital."
-        },
-        "longitude": {
-          "type": "number",
-          "description": "The geographical longitude coordinate of the hospital."
-        },
-        "phoneNumber": {
-          "type": "string",
-          "description": "The primary contact phone number for the hospital."
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "address",
-        "phoneNumber"
-      ]
-    },
-    "WellnessResource": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "WellnessResource",
-      "type": "object",
-      "description": "Content for the wellness section, including videos, diet plans, and guides.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the WellnessResource entity."
-        },
-        "title": {
-          "type": "string",
-          "description": "The title of the wellness resource (e.g., 'Yoga for Beginners', 'Mediterranean Diet Plan')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A brief description of what the resource offers."
-        },
-        "category": {
-          "type": "string",
-          "description": "The category of the wellness resource (e.g., 'Yoga videos', 'Diet plans', 'Pregnancy care', 'Mental health tips', 'Old age care guide')."
-        },
-        "contentType": {
-          "type": "string",
-          "description": "The format of the content (e.g., 'video', 'article', 'pdf')."
-        },
-        "contentUrl": {
-          "type": "string",
-          "description": "URL where the actual content (video, article, PDF) can be accessed.",
-          "format": "uri"
-        },
-        "imageUrl": {
-          "type": "string",
-          "description": "URL to a thumbnail or preview image for the resource.",
-          "format": "uri"
-        },
-        "tags": {
-          "type": "array",
-          "description": "Keywords or tags to further categorize the wellness resource.",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "title",
-        "description",
-        "category",
-        "contentType",
-        "contentUrl"
-      ]
-    },
-    "Offer": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Offer",
-      "type": "object",
-      "description": "Manages promotional offers and coupons for medicines and services.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Offer entity."
+          "description": "Unique identifier for the Coupon entity."
         },
         "code": {
           "type": "string",
-          "description": "The promotional code that users can apply (e.g., 'SAVE10')."
-        },
-        "name": {
-          "type": "string",
-          "description": "A short, user-friendly name for the offer."
+          "description": "The unique code that users enter to apply the coupon."
         },
         "description": {
           "type": "string",
-          "description": "A detailed description of the offer, including terms and conditions."
+          "description": "A description of the coupon's offer."
         },
-        "discountPercentage": {
-          "type": "number",
-          "description": "The percentage discount offered (e.g., 10 for 10% off)."
-        },
-        "minOrderAmount": {
-          "type": "number",
-          "description": "The minimum order amount required to apply the offer, if applicable."
-        },
-        "startDate": {
+        "discountType": {
           "type": "string",
-          "description": "The date and time when the offer becomes active.",
+          "description": "The type of discount offered (e.g., 'Percentage', 'Fixed Amount')."
+        },
+        "discountValue": {
+          "type": "number",
+          "description": "The value of the discount (e.g., '10' for 10% or '50' for ₹50 off)."
+        },
+        "minimumOrderAmount": {
+          "type": "number",
+          "description": "The minimum order amount required to use this coupon, if any."
+        },
+        "validFrom": {
+          "type": "string",
+          "description": "The date and time from which the coupon is valid.",
           "format": "date-time"
         },
-        "endDate": {
+        "validUntil": {
           "type": "string",
-          "description": "The date and time when the offer expires.",
+          "description": "The date and time until which the coupon is valid.",
           "format": "date-time"
         },
         "isActive": {
           "type": "boolean",
-          "description": "Indicates if the offer is currently active and can be used."
+          "description": "Indicates if the coupon is currently active and usable."
         },
-        "appliesToEntityType": {
-          "type": "string",
-          "description": "Specifies what the offer applies to (e.g., 'all', 'Medicine', 'MedicineCategory')."
-        },
-        "appliesToEntityIds": {
+        "applicableToMedicineIds": {
           "type": "array",
-          "description": "References to specific Medicine or MedicineCategory entities this offer applies to, if not 'all'.",
+          "description": "References to specific Medicine IDs to which this coupon applies. (Relationship: Coupon N:N Medicine)",
           "items": {
             "type": "string"
           }
         },
-        "maxUsageCount": {
-          "type": "number",
-          "description": "The maximum number of times this offer can be used in total or per user."
+        "applicableToCategoryIds": {
+          "type": "array",
+          "description": "References to specific Category IDs (e.g., for medicines or lab tests) to which this coupon applies. (Relationship: Coupon N:N Category)",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [
         "id",
         "code",
-        "name",
-        "description",
-        "discountPercentage",
-        "startDate",
-        "endDate",
+        "discountType",
+        "discountValue",
+        "validFrom",
+        "validUntil",
         "isActive"
       ]
     },
@@ -971,7 +920,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Referral",
       "type": "object",
-      "description": "Tracks the details of user referrals and associated rewards.",
+      "description": "Tracks a user referral event and its associated rewards.",
       "properties": {
         "id": {
           "type": "string",
@@ -979,44 +928,98 @@
         },
         "referrerUserId": {
           "type": "string",
-          "description": "Reference to the User who made the referral. (Relationship: User 1:N Referral)"
+          "description": "Reference to the UserProfile who referred a new user. (Relationship: UserProfile 1:N Referral - as referrer)"
         },
         "referredUserId": {
           "type": "string",
-          "description": "Reference to the User who was referred, once they sign up. (Relationship: User 1:N Referral)"
+          "description": "Reference to the UserProfile who was referred. (Relationship: UserProfile 1:N Referral - as referred)"
         },
         "referralCodeUsed": {
           "type": "string",
-          "description": "The specific referral code used for this referral."
+          "description": "The referral code used during the sign-up of the referred user."
+        },
+        "rewardStatus": {
+          "type": "string",
+          "description": "The status of the referral reward (e.g., 'Pending', 'Credited', 'Claimed')."
         },
         "referralDate": {
           "type": "string",
-          "description": "The date and time when the referral event (e.g., signup) occurred.",
+          "description": "The date and time when the referral event occurred.",
           "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the referral (e.g., 'pending', 'earned', 'paid_out')."
-        },
-        "rewardAmount": {
-          "type": "number",
-          "description": "The monetary value of the reward associated with this referral."
         }
       },
       "required": [
         "id",
         "referrerUserId",
+        "referredUserId",
         "referralCodeUsed",
-        "referralDate",
-        "status"
+        "rewardStatus",
+        "referralDate"
+      ]
+    },
+    "Pharmacy": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Pharmacy",
+      "type": "object",
+      "description": "Represents a partner pharmacy or franchise that fulfills medicine orders.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Pharmacy entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the pharmacy."
+        },
+        "addressId": {
+          "type": "string",
+          "description": "Reference to the physical Address of the pharmacy. (Relationship: Address 1:N Pharmacy)"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The contact phone number for the pharmacy."
+        },
+        "email": {
+          "type": "string",
+          "description": "The contact email address for the pharmacy.",
+          "format": "email"
+        },
+        "licenseNumber": {
+          "type": "string",
+          "description": "The pharmacy's operating license number."
+        },
+        "contactPerson": {
+          "type": "string",
+          "description": "The name of the primary contact person at the pharmacy."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates if the pharmacy is currently active and fulfilling orders."
+        },
+        "partnerSince": {
+          "type": "string",
+          "description": "The date and time when the pharmacy became a partner.",
+          "format": "date-time"
+        },
+        "deliveryRadiusKm": {
+          "type": "number",
+          "description": "The maximum delivery radius in kilometers from the pharmacy."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "addressId",
+        "phoneNumber",
+        "licenseNumber",
+        "isActive"
       ]
     }
   },
   "auth": {
     "providers": [
       "password",
-      "anonymous",
-      "google.com"
+      "anonymous"
     ]
   },
   "firestore": {
@@ -1024,51 +1027,29 @@
       {
         "path": "/users/{userId}",
         "definition": {
-          "entityName": "User",
+          "entityName": "UserProfile",
           "schema": {
-            "$ref": "#/backend/entities/User"
+            "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Stores core user profile information. Access is restricted to the user whose ID matches the document ID. This serves as the root for all user-specific private data.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique ID of the user, matching `request.auth.uid`."
-            }
-          ]
+          "description": "Stores individual user profile information. The document ID (`{userId}`) matches the authenticated user's UID. Access is restricted to the owner (`request.auth.uid == userId`)."
         }
       },
       {
-        "path": "/users/{userId}/patientProfile",
+        "path": "/users/{userId}/addresses/{addressId}",
         "definition": {
-          "entityName": "PatientProfile",
+          "entityName": "Address",
           "schema": {
-            "$ref": "#/backend/entities/PatientProfile"
+            "$ref": "#/backend/entities/Address"
           },
-          "description": "Stores the primary health profile for a user. The document ID is 'patientProfile'. The `userId` field within the document must match the parent `userId` from the path, ensuring direct ownership. This enables simple, atomic security rules.",
+          "description": "Stores physical addresses belonging to a specific user. The `userId` in the path ensures authorization independence. Includes denormalized 'userId' for explicit ownership.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique ID of the user who owns this patient profile."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/patientProfile/familyMembers/{familyMemberId}",
-        "definition": {
-          "entityName": "FamilyMember",
-          "schema": {
-            "$ref": "#/backend/entities/FamilyMember"
-          },
-          "description": "Contains health records for family members managed by the primary patient. Includes denormalized `ownerUserId` (the `userId` from the path) for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique ID of the user who owns the primary patient profile managing this family member."
+              "description": "The ID of the user who owns this address."
             },
             {
-              "name": "familyMemberId",
-              "description": "The unique ID of the family member's record."
+              "name": "addressId",
+              "description": "The unique ID of the address."
             }
           ]
         }
@@ -1080,27 +1061,11 @@
           "schema": {
             "$ref": "#/backend/entities/Doctor"
           },
-          "description": "Stores public profiles for doctors. Publicly readable for all authenticated users for discovery. Write access is restricted to the doctor whose `userId` field matches the `request.auth.uid`. Includes denormalized `userId` for authorization independence.",
+          "description": "Stores information about verified doctors. Publicly readable by all authenticated users; write access restricted to administrators. Supports QAPs for listing doctors.",
           "params": [
             {
               "name": "doctorId",
               "description": "The unique ID of the doctor."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/medicineCategories/{categoryId}",
-        "definition": {
-          "entityName": "MedicineCategory",
-          "schema": {
-            "$ref": "#/backend/entities/MedicineCategory"
-          },
-          "description": "Stores categories for medicines. Publicly readable for all authenticated users. Admin write access.",
-          "params": [
-            {
-              "name": "categoryId",
-              "description": "The unique ID of the medicine category."
             }
           ]
         }
@@ -1112,7 +1077,7 @@
           "schema": {
             "$ref": "#/backend/entities/Medicine"
           },
-          "description": "Stores details about individual medicines. Publicly readable for all authenticated users. Admin write access.",
+          "description": "Catalog of available medicine products. Publicly readable by all authenticated users; write access restricted to administrators. Supports QAPs for listing medicines.",
           "params": [
             {
               "name": "medicineId",
@@ -1122,73 +1087,81 @@
         }
       },
       {
-        "path": "/users/{userId}/patientProfile/prescriptions/{prescriptionId}",
+        "path": "/categories/{categoryId}",
+        "definition": {
+          "entityName": "Category",
+          "schema": {
+            "$ref": "#/backend/entities/Category"
+          },
+          "description": "Defines categories for medicines, lab tests, or wellness content. Publicly readable by all authenticated users; write access restricted to administrators. Supports QAPs for listing categories.",
+          "params": [
+            {
+              "name": "categoryId",
+              "description": "The unique ID of the category."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/orders/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Stores user-specific orders. The `userId` in the path ensures authorization independence. Includes denormalized 'userId' for explicit ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user who placed this order."
+            },
+            {
+              "name": "orderId",
+              "description": "The unique ID of the order."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/orders/{orderId}/orderItems/{orderItemId}",
+        "definition": {
+          "entityName": "OrderItem",
+          "schema": {
+            "$ref": "#/backend/entities/OrderItem"
+          },
+          "description": "Represents individual items within a user's order. Inherits authorization from the parent Order. Includes denormalized 'userId' and 'orderId' for authorization independence (though typically read in context of parent).",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user who owns the parent order."
+            },
+            {
+              "name": "orderId",
+              "description": "The ID of the parent order."
+            },
+            {
+              "name": "orderItemId",
+              "description": "The unique ID of the order item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/prescriptions/{prescriptionId}",
         "definition": {
           "entityName": "Prescription",
           "schema": {
             "$ref": "#/backend/entities/Prescription"
           },
-          "description": "Stores uploaded prescriptions for a patient. Includes denormalized `ownerUserId` (the `userId` from the path) for authorization independence.",
+          "description": "Stores uploaded or generated prescriptions for a specific user. The `userId` in the path ensures authorization independence. Includes denormalized 'userId' for explicit ownership.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique ID of the user who owns this prescription."
+              "description": "The ID of the user who owns this prescription."
             },
             {
               "name": "prescriptionId",
               "description": "The unique ID of the prescription."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/doctorConsultations/{consultationId}",
-        "definition": {
-          "entityName": "DoctorConsultation",
-          "schema": {
-            "$ref": "#/backend/entities/DoctorConsultation"
-          },
-          "description": "Records doctor consultations. Includes denormalized `patientUserId` and `doctorUserId` for authorization independence, allowing both the patient and the doctor involved to access the record directly. QAP-compliant for listing.",
-          "params": [
-            {
-              "name": "consultationId",
-              "description": "The unique ID of the doctor consultation."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/doctorConsultations/{consultationId}/doctorNotes/{noteId}",
-        "definition": {
-          "entityName": "DoctorNote",
-          "schema": {
-            "$ref": "#/backend/entities/DoctorNote"
-          },
-          "description": "Stores notes made by a doctor during or after a consultation. Includes denormalized `consultationPatientUserId` and `consultationDoctorUserId` from the parent consultation for authorization independence.",
-          "params": [
-            {
-              "name": "consultationId",
-              "description": "The unique ID of the parent doctor consultation."
-            },
-            {
-              "name": "noteId",
-              "description": "The unique ID of the doctor's note."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/labTestCategories/{categoryId}",
-        "definition": {
-          "entityName": "LabTestCategory",
-          "schema": {
-            "$ref": "#/backend/entities/LabTestCategory"
-          },
-          "description": "Stores categories for lab tests. Publicly readable for all authenticated users. Admin write access.",
-          "params": [
-            {
-              "name": "categoryId",
-              "description": "The unique ID of the lab test category."
             }
           ]
         }
@@ -1200,7 +1173,7 @@
           "schema": {
             "$ref": "#/backend/entities/LabTest"
           },
-          "description": "Defines individual lab tests. Publicly readable for all authenticated users. Admin write access.",
+          "description": "Catalog of available lab tests. Publicly readable by all authenticated users; write access restricted to administrators. Supports QAPs for listing lab tests.",
           "params": [
             {
               "name": "labTestId",
@@ -1210,17 +1183,17 @@
         }
       },
       {
-        "path": "/users/{userId}/patientProfile/labTestBookings/{bookingId}",
+        "path": "/users/{userId}/labTestBookings/{bookingId}",
         "definition": {
           "entityName": "LabTestBooking",
           "schema": {
             "$ref": "#/backend/entities/LabTestBooking"
           },
-          "description": "Records patient bookings for lab tests. Includes denormalized `ownerUserId` (the `userId` from the path) for authorization independence.",
+          "description": "Records bookings for lab tests made by a specific user. The `userId` in the path ensures authorization independence. Includes denormalized 'userId' for explicit ownership.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique ID of the user who owns this lab test booking."
+              "description": "The ID of the user who booked this lab test."
             },
             {
               "name": "bookingId",
@@ -1230,45 +1203,77 @@
         }
       },
       {
-        "path": "/users/{userId}/patientProfile/orders/{orderId}",
+        "path": "/users/{userId}/healthRecords/{recordId}",
         "definition": {
-          "entityName": "Order",
+          "entityName": "HealthRecord",
           "schema": {
-            "$ref": "#/backend/entities/Order"
+            "$ref": "#/backend/entities/HealthRecord"
           },
-          "description": "Represents a customer order. Includes denormalized `ownerUserId` (the `userId` from the path) for authorization independence.",
+          "description": "Stores historical health records for a user or their family members. The `userId` in the path ensures authorization independence. Includes denormalized 'userId' for explicit ownership.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique ID of the user who placed this order."
+              "description": "The ID of the user who owns this health record."
             },
             {
-              "name": "orderId",
-              "description": "The unique ID of the order."
+              "name": "recordId",
+              "description": "The unique ID of the health record."
             }
           ]
         }
       },
       {
-        "path": "/users/{userId}/patientProfile/orders/{orderId}/orderItems/{orderItemId}",
+        "path": "/users/{userId}/familyMembers/{familyMemberId}",
         "definition": {
-          "entityName": "OrderItem",
+          "entityName": "FamilyMember",
           "schema": {
-            "$ref": "#/backend/entities/OrderItem"
+            "$ref": "#/backend/entities/FamilyMember"
           },
-          "description": "Details individual items within an order. Includes denormalized `orderOwnerUserId` (the `userId` from the parent order's path) for authorization independence.",
+          "description": "Manages profiles for family members under a primary user. The `userId` in the path ensures authorization independence. Includes denormalized 'userId' for explicit ownership.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique ID of the user who owns the parent order."
+              "description": "The ID of the primary user managing this family member."
             },
             {
-              "name": "orderId",
-              "description": "The unique ID of the parent order."
+              "name": "familyMemberId",
+              "description": "The unique ID of the family member."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/doctorConsultations/{consultationId}",
+        "definition": {
+          "entityName": "DoctorConsultation",
+          "schema": {
+            "$ref": "#/backend/entities/DoctorConsultation"
+          },
+          "description": "Records details of doctor consultation sessions for a specific user. The `userId` in the path ensures authorization independence. Includes denormalized 'userId' for explicit ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user who participated in this consultation."
             },
             {
-              "name": "orderItemId",
-              "description": "The unique ID of the order item."
+              "name": "consultationId",
+              "description": "The unique ID of the doctor consultation."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/timeSlots/{timeSlotId}",
+        "definition": {
+          "entityName": "TimeSlot",
+          "schema": {
+            "$ref": "#/backend/entities/TimeSlot"
+          },
+          "description": "Stores available time slots for doctor consultations. Publicly readable for browsing; includes denormalized 'doctorId' for doctor management and 'bookedByUserId' for user booking/cancellation, ensuring authorization independence for updates.",
+          "params": [
+            {
+              "name": "timeSlotId",
+              "description": "The unique ID of the time slot."
             }
           ]
         }
@@ -1280,7 +1285,7 @@
           "schema": {
             "$ref": "#/backend/entities/HealthTip"
           },
-          "description": "Stores daily health tips. Publicly readable for all authenticated users. Admin write access.",
+          "description": "Provides daily health tips and wellness advice. Publicly readable by all authenticated users; write access restricted to administrators. Supports QAPs for listing health tips.",
           "params": [
             {
               "name": "tipId",
@@ -1290,66 +1295,30 @@
         }
       },
       {
-        "path": "/hospitals/{hospitalId}",
+        "path": "/coupons/{couponId}",
         "definition": {
-          "entityName": "Hospital",
+          "entityName": "Coupon",
           "schema": {
-            "$ref": "#/backend/entities/Hospital"
+            "$ref": "#/backend/entities/Coupon"
           },
-          "description": "Information about hospitals. Publicly readable for all authenticated users (or unauthenticated for emergency). Admin write access.",
+          "description": "Manages promotional coupons and offers. Publicly readable by all authenticated users; write access restricted to administrators. Supports QAPs for listing coupons.",
           "params": [
             {
-              "name": "hospitalId",
-              "description": "The unique ID of the hospital."
+              "name": "couponId",
+              "description": "The unique ID of the coupon."
             }
           ]
         }
       },
       {
-        "path": "/wellnessResources/{resourceId}",
-        "definition": {
-          "entityName": "WellnessResource",
-          "schema": {
-            "$ref": "#/backend/entities/WellnessResource"
-          },
-          "description": "Stores wellness content like videos and diet plans. Publicly readable for all authenticated users. Admin write access.",
-          "params": [
-            {
-              "name": "resourceId",
-              "description": "The unique ID of the wellness resource."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/offers/{offerId}",
-        "definition": {
-          "entityName": "Offer",
-          "schema": {
-            "$ref": "#/backend/entities/Offer"
-          },
-          "description": "Manages promotional offers and coupons. Publicly readable for all authenticated users. Admin write access.",
-          "params": [
-            {
-              "name": "offerId",
-              "description": "The unique ID of the offer."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/referrals/{referralId}",
+        "path": "/referrals/{referralId}",
         "definition": {
           "entityName": "Referral",
           "schema": {
             "$ref": "#/backend/entities/Referral"
           },
-          "description": "Tracks user referrals. Includes denormalized `referrerUserId` (from the path, as owner) and `referredUserId` for authorization independence, allowing both parties to access the record.",
+          "description": "Tracks user referral events and rewards. Includes denormalized 'referrerUserId' and 'referredUserId' for authorization independence, allowing both users to view their related referral entries. Supports QAPs for listing user-specific referrals.",
           "params": [
-            {
-              "name": "userId",
-              "description": "The unique ID of the user who is either the referrer or referred party in this referral chain."
-            },
             {
               "name": "referralId",
               "description": "The unique ID of the referral event."
@@ -1358,17 +1327,33 @@
         }
       },
       {
+        "path": "/pharmacies/{pharmacyId}",
+        "definition": {
+          "entityName": "Pharmacy",
+          "schema": {
+            "$ref": "#/backend/entities/Pharmacy"
+          },
+          "description": "Lists partner pharmacies. Publicly readable by all authenticated users; write access restricted to administrators. Pharmacy address details are expected to be embedded or handled separately to avoid conflict with user-owned Address schema. Supports QAPs for listing pharmacies.",
+          "params": [
+            {
+              "name": "pharmacyId",
+              "description": "The unique ID of the pharmacy."
+            }
+          ]
+        }
+      },
+      {
         "path": "/roles_admin/{userId}",
         "definition": {
-          "entityName": "User",
+          "entityName": "AdminRole",
           "schema": {
-            "$ref": "#/backend/entities/User"
+            "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "A collection used for Database Access Control (DBAC). The existence of a document at this path signifies that the `userId` is an administrator. No sensitive user data is stored here, only a pointer for role verification.",
+          "description": "Database-backed access control for administrators. The existence of a document at this path signifies an administrative role for the `{userId}`. Used for Authorization Independence in rules.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique ID of the user who has been assigned the 'admin' role."
+              "description": "The ID of the user with admin privileges."
             }
           ]
         }
@@ -1376,20 +1361,20 @@
       {
         "path": "/roles_doctor/{userId}",
         "definition": {
-          "entityName": "User",
+          "entityName": "DoctorRole",
           "schema": {
-            "$ref": "#/backend/entities/User"
+            "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "A collection used for Database Access Control (DBAC). The existence of a document at this path signifies that the `userId` is a doctor. This allows for role-based access checks, e.g., for updating doctor profiles or creating doctor notes.",
+          "description": "Database-backed access control for verified doctors. The existence of a document at this path signifies a doctor role for the `{userId}`. Used for Authorization Independence in rules.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique ID of the user who has been assigned the 'doctor' role."
+              "description": "The ID of the user with doctor privileges."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore structure prioritizes robust security, scalability, and debuggability by strictly adhering to Authorization Independence and Structural Segregation principles. User-specific private data is deeply nested under `/users/{userId}/...` to leverage path-based security, making `request.auth.uid` checks straightforward and efficient. Publicly accessible application data (e.g., Doctors, Medicines, Categories, Health Tips, Hospitals, Wellness Resources, Offers) resides in top-level collections, allowing for simple 'allow read: if request.auth.uid != null;' or even 'allow read: true;' rules if fully public.\n\nAuthorization Independence is achieved primarily through **denormalization**. For any subcollection whose access depends on a parent's ownership or membership, the relevant `userId` (or `member` map) is copied directly into the child document. For example:\n- `PatientProfile` is stored at `/users/{userId}/patientProfile`. The `userId` in the document implicitly matches the `userId` in the path, making ownership explicit.\n- `FamilyMember`, `Prescription`, `LabTestBooking`, and `Order` documents, which are subcollections of a user's `patientProfile`, will include an `ownerUserId` field. This `ownerUserId` will always be the `userId` from the parent path, allowing direct authorization checks on the document itself (`resource.data.ownerUserId == request.auth.uid`) without needing to perform a `get()` operation on the parent `PatientProfile` or `User` document.\n- `DoctorConsultation` documents, which involve both a patient and a doctor, will denormalize `patientUserId` and `doctorUserId` fields. This enables independent checks for both parties (`request.auth.uid == resource.data.patientUserId || request.auth.uid == resource.data.doctorUserId`), allowing each party to access their relevant consultations without needing to traverse relationships.\n- `DoctorNote` documents, nested under `DoctorConsultation`, will denormalize `consultationPatientUserId` and `consultationDoctorUserId` from their parent, ensuring access can be granted to both the patient and the doctor involved in that consultation.\n- `OrderItem` documents will denormalize `orderOwnerUserId` from their parent `Order` for similar reasons.\n- `Referral` documents will include both `referrerUserId` and `referredUserId` for direct access control by either involved user.\n\nThis denormalization strategy is critical for enabling **QAP-compliant (Query as Authorization Predicate) `list` operations**. For private, user-owned data, queries will naturally be scoped by the `userId` in the path (e.g., `db.collection('users').doc(auth.uid).collection('prescriptions')`). For shared collections like `/doctorConsultations`, clients *must* include `where('patientUserId', '==', request.auth.uid)` or `where('doctorUserId', '==', request.auth.uid)` in their queries. Security rules can then enforce that any `list` operation on `/doctorConsultations` must contain one of these filters, preventing unauthorized broad fetches. Public collections like `/medicines` support open `list` operations as they are designed for general browsing. This structure minimizes complex `get()` calls in security rules, significantly improving performance, maintainability, and debuggability while ensuring data integrity and strict access control."
+    "reasoning": "The Firestore structure is designed following the core principles of Authorization Independence, Structural Segregation, and DBAC to ensure a secure, scalable, and debuggable system for HealthLinke. Authorization Independence is primarily achieved through two mechanisms:\n1.  **Path-Based Ownership and Denormalization:** For all user-specific data (e.g., UserProfile, Address, Order, Prescription, HealthRecord, FamilyMember, DoctorConsultation, LabTestBooking), the authenticated user's ID (`request.auth.uid`) is directly embedded as a wildcard in the path (e.g., `/users/{userId}/addresses/{addressId}`). This allows security rules to directly compare `request.auth.uid` with the `{userId}` wildcard, eliminating the need for `get()` calls to parent documents to determine ownership. This makes authorization checks atomic, performant, and simplifies rule debugging. The relevant `userId` is also explicitly stored within the document itself for data integrity and client-side querying.\n2.  **Denormalization for Shared/Complex Access:** For entities that involve multiple users or roles (e.g., TimeSlot, Referral), all necessary authorization context (like `doctorId`, `bookedByUserId`, `referrerUserId`, `referredUserId`) is denormalized directly into the document. This allows security rules to verify access by comparing `request.auth.uid` with fields within the `resource.data` or `request.resource.data` object without requiring any `get()` operations, further supporting atomic writes and reads.\n\n**Structural Segregation** is applied by categorizing collections based on their security posture:\n*   **User-Owned Data:** All data solely owned and managed by an individual user (e.g., their addresses, orders, health records) is nested under `/users/{userId}/...`. This automatically scopes access to the authenticated user and ensures that only they can view or modify their personal data.\n*   **Publicly Viewable Data:** Entities like `Doctor`, `Medicine`, `Category`, `LabTest`, `HealthTip`, `Coupon`, and `Pharmacy` are placed in top-level collections. These are generally read-accessible by all authenticated users and writable only by administrators (defined via DBAC roles). This segregation simplifies security rules for these collections to `allow read: if request.auth != null;` and `allow write: if isAdmin();`.\n*   **Roles:** Admin and Doctor roles are managed using the Database-Backed Access Control (DBAC) pattern. Dedicated collections like `/roles_admin/{userId}` and `/roles_doctor/{userId}` exist. The presence of a document at these paths grants the user the corresponding role. This allows for simple, efficient rule functions like `isAdmin()` and `isDoctor()` that check for document existence, avoiding custom claims.\n\n**QAPs (Queries Are Not Filters)** are supported by this structure:\n*   For user-owned data, the path-based ownership (`/users/{userId}/...`) intrinsically enforces QAPs. A client querying `/users/myUserId/orders` will only receive documents owned by `myUserId`, and the security rules will prevent access to `/users/anotherUser/orders` if `request.auth.uid != anotherUser`.\n*   For globally accessible collections, `list` operations are inherently secure as all documents share the same read permission (all authenticated users). Filtering for specific categories or types is expected client-side. For `TimeSlot` and `Referral`, while read access might be broad, write/update rules are granular based on the denormalized `userId`s, and `list` operations requiring specific user context (e.g., 'my referrals') would use client-side `where` clauses, which are then verified by the security rules, ensuring only authorized results are returned if a read rule is conditional (as for `Referral`).\n\nOverall, this design prioritizes clarity, security, and performance by leveraging Firestore's hierarchical nature and strategic denormalization, minimizing complex `get()` operations in security rules and promoting easy debugging."
   }
 }
