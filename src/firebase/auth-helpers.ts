@@ -8,7 +8,8 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     sendPasswordResetEmail,
-    updateProfile
+    updateProfile,
+    signInAnonymously
 } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 
@@ -52,6 +53,11 @@ export function initiateEmailSignIn(
   signInWithEmailAndPassword(authInstance, email, password)
     .then(onSuccess)
     .catch(onError);
+}
+
+/** Initiate anonymous sign-in (non-blocking). */
+export function initiateAnonymousSignIn(authInstance: Auth): void {
+  signInAnonymously(authInstance);
 }
 
 /** Initiate password reset (non-blocking). */
