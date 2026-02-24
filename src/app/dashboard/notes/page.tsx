@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase';
-import { StickyNote, PlusCircle, Trash2 } from 'lucide-react';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, doc, deleteDoc, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { StickyNote, PlusCircle, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -35,15 +36,24 @@ type DoctorNote = z.infer<typeof noteSchema> & { id: string };
 
 export default function NotesPage() {
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
   const router = useRouter();
-  const [notes, setNotes] = useState<DoctorNote[]>([]);
+  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push('/login');
     }
   }, [user, isUserLoading, router]);
+
+  const notesQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return query(collection(firestore, `userProfiles/${user.uid}/notes`), orderBy('date', 'desc'));
+  }, [user, firestore]);
+
+  const { data: notes, isLoading: areNotesLoading } = useCollection<DoctorNote>(notesQuery);
 
   const form = useForm<z.infer<typeof noteSchema>>({
     resolver: zodResolver(noteSchema),
@@ -54,26 +64,42 @@ export default function NotesPage() {
     }
   });
 
-  const handleAddNote = (values: z.infer<typeof noteSchema>) => {
-    const newNote: DoctorNote = {
-      id: new Date().toISOString(),
-      ...values,
-    };
-    setNotes(prev => [...prev, newNote]);
-    toast({
-      title: 'Note Added',
-      description: `A new note from ${values.doctorName} has been saved.`,
-    });
-    form.reset();
-    setIsDialogOpen(false);
+  const handleAddNote = async (values: z.infer<typeof noteSchema>) => {
+    if (!user || !firestore) return;
+    setIsSubmitting(true);
+    try {
+      await addDoc(collection(firestore, `userProfiles/${user.uid}/notes`), {
+        ...values,
+        createdAt: serverTimestamp(),
+      });
+      toast({
+        title: 'Note Added',
+        description: `A new note from ${values.doctorName} has been saved.`,
+      });
+      form.reset();
+      setIsDialogOpen(false);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save note.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
-  const handleDeleteNote = (id: string) => {
-    setNotes(prev => prev.filter(n => n.id !== id));
-    toast({
-      title: 'Note Removed',
-      variant: 'destructive'
-    });
+  const handleDeleteNote = async (id: string) => {
+    if (!user || !firestore) return;
+    try {
+      await deleteDoc(doc(firestore, `userProfiles/${user.uid}/notes`, id));
+      toast({
+        title: 'Note Removed',
+        variant: 'destructive'
+      });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to remove note." });
+    }
   }
 
   if (isUserLoading || !user) {
@@ -81,14 +107,7 @@ export default function NotesPage() {
       <div className="container mx-auto py-12">
         <Skeleton className="h-10 w-1/2 mb-2" />
         <Skeleton className="h-6 w-3/4 mb-12" />
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-8 w-1/3" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-24 w-full" />
-          </CardContent>
-        </Card>
+        <Card><CardHeader><Skeleton className="h-8 w-1/3" /></CardHeader><CardContent><Skeleton className="h-24 w-full" /></CardContent></Card>
       </div>
     );
   }
@@ -109,28 +128,21 @@ export default function NotesPage() {
             <div>
                 <CardTitle>Your Doctor Notes</CardTitle>
                 <CardDescription>
-                  {notes.length > 0 ? `You have ${notes.length} note(s).` : 'You have no notes yet.'}
+                  {notes && notes.length > 0 ? `You have ${notes.length} note(s).` : 'You have no notes yet.'}
                 </CardDescription>
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Note
-                </Button>
+                <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Note</Button>
               </DialogTrigger>
               <DialogContent>
                  <DialogHeader>
                   <DialogTitle>Add Doctor Note</DialogTitle>
-                  <DialogDescription>
-                    Enter the details from your consultation.
-                  </DialogDescription>
+                  <DialogDescription>Enter details from your consultation.</DialogDescription>
                 </DialogHeader>
                  <Form {...form}>
                   <form onSubmit={form.handleSubmit(handleAddNote)} className="space-y-4">
-                     <FormField
-                        control={form.control}
-                        name="doctorName"
-                        render={({ field }) => (
+                     <FormField control={form.control} name="doctorName" render={({ field }) => (
                           <FormItem>
                             <FormLabel>Doctor's Name</FormLabel>
                             <FormControl><Input placeholder="e.g., Dr. Ramesh Sharma" {...field} /></FormControl>
@@ -138,21 +150,15 @@ export default function NotesPage() {
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name="date"
-                        render={({ field }) => (
+                      <FormField control={form.control} name="date" render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Date of Consultation</FormLabel>
+                            <FormLabel>Date</FormLabel>
                             <FormControl><Input type="date" {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                       <FormField
-                        control={form.control}
-                        name="note"
-                        render={({ field }) => (
+                       <FormField control={form.control} name="note" render={({ field }) => (
                           <FormItem>
                             <FormLabel>Note</FormLabel>
                             <FormControl><Textarea rows={5} placeholder="e.g., Patient reported mild chest pain..." {...field} /></FormControl>
@@ -161,7 +167,10 @@ export default function NotesPage() {
                         )}
                       />
                     <DialogFooter>
-                      <Button type="submit">Save Note</Button>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save Note
+                      </Button>
                     </DialogFooter>
                   </form>
                 </Form>
@@ -169,10 +178,10 @@ export default function NotesPage() {
             </Dialog>
         </CardHeader>
         <CardContent>
-          {notes.length === 0 ? (
-            <div className='text-center text-muted-foreground py-12'>
-              <p>Notes from your doctor consultations will appear here.</p>
-            </div>
+          {areNotesLoading ? (
+            <div className="space-y-4"><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /></div>
+          ) : !notes || notes.length === 0 ? (
+            <div className='text-center text-muted-foreground py-12'><p>Notes will appear here.</p></div>
           ) : (
             <div className="space-y-4">
               {notes.map(note => (
@@ -186,9 +195,7 @@ export default function NotesPage() {
                       <Trash2 className="h-5 w-5 text-destructive" />
                     </Button>
                   </CardHeader>
-                  <CardContent>
-                    <p className="whitespace-pre-wrap">{note.note}</p>
-                  </CardContent>
+                  <CardContent><p className="whitespace-pre-wrap">{note.note}</p></CardContent>
                 </Card>
               ))}
             </div>

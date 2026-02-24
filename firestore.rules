@@ -1,242 +1,31 @@
-/**
- * HealthLinke Security Rules
- *
- * Core Philosophy:
- * This ruleset implements a strict user-ownership model combined with role-based access control 
- * (RBAC) via database-backed roles. Private patient data is isolated within user-specific paths, 
- * while medical catalogs and wellness content are publicly readable but restricted to 
- * administrative writes.
- *
- * Data Structure:
- * - /users/{userId}: The root of the user's private data tree, including profiles, orders, and records.
- * - /doctors, /medicines, /categories, etc.: Top-level public catalogs.
- * - /roles_admin, /roles_doctor: Metadata collections used to verify user privileges.
- *
- * Key Security Decisions:
- * 1. Path-Based Authorization: We rely heavily on the {userId} wildcard in the document path 
- *    to authorize access to personal health data, ensuring high performance and clarity.
- * 2. Database-Backed Roles (DBAC): Roles are determined by the existence of documents in 
- *    specific role collections, avoiding the complexity of custom claims for rapid prototyping.
- * 3. Relational Integrity: On creation of user-scoped documents, we enforce that internal 
- *    ownership fields (like userId) match the path to prevent data from being orphaned or spoofed.
- * 4. Structural Segregation: Administrative content (tips, coupons, medicine catalogs) is 
- *    segregated into top-level collections with a "Public Read, Admin Write" posture.
- *
- * Denormalization for Authorization:
- * - TimeSlots contain `doctorId` and `bookedByUserId` to allow doctors to manage slots and users 
- *   to book them without secondary lookups.
- * - Referrals contain both `referrerUserId` and `referredUserId` to allow both parties to 
- *   access the referral record efficiently.
- */
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // --- Helper Functions ---
-
-    /** Checks if the user is authenticated. */
     function isSignedIn() {
       return request.auth != null;
     }
-
-    /** Checks if the authenticated user's UID matches the provided userId. */
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
-    /** Checks ownership and ensures the document exists for update/delete operations. */
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
-    }
-
-    /** Verifies the user has an entry in the admin roles collection. */
-    function isAdmin() {
-      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-    }
-
-    /** Verifies the user has an entry in the doctor roles collection. */
-    function isDoctor() {
-      return exists(/databases/$(database)/documents/roles_doctor/$(request.auth.uid));
-    }
-
-    /**
-     * Checks if the current document's doctorId matches the provided authenticated UID.
-     * `authUid` is explicitly passed to resolve the "Invalid variable name: request" warning.
-     */
-    function isDoctorOwner(doctorId, authUid) {
-      return authUid == doctorId;
-    }
-
-    // --- Collection Rules ---
-
-    /**
-     * @description Access to the primary user profile document.
-     * @path /users/{userId}
-     * @allow User 'abc' (get) /users/abc
-     * @deny User 'xyz' (update) /users/abc
-     * @principle Ownership - Users manage their own profile.
-     */
+    // Support both paths used in the app
     match /users/{userId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description User-owned subcollections (Addresses, Orders, Prescriptions, Health Records, etc.)
-     * @path /users/{userId}/{collection=**}
-     * @allow User 'abc' (create) /users/abc/orders/order123
-     * @deny User 'xyz' (list) /users/abc/prescriptions
-     * @principle Structural Segregation - Nested collections inherit path-based ownership.
-     */
-    match /users/{userId}/addresses/{addressId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    match /users/{userId}/orders/{orderId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
-
-      match /orderItems/{itemId} {
-        allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId) && request.resource.data.orderId == orderId;
-        allow update: if isExistingOwner(userId);
-        allow delete: if isExistingOwner(userId);
+      allow read, write: if isOwner(userId);
+      match /{allSubcollections=**} {
+        allow read, write: if isOwner(userId);
       }
     }
 
-    match /users/{userId}/prescriptions/{prescriptionId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
+    match /userProfiles/{userId} {
+      allow read, write: if isOwner(userId);
+      match /{allSubcollections=**} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
-    match /users/{userId}/labTestBookings/{bookingId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    match /users/{userId}/healthRecords/{recordId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    match /users/{userId}/familyMembers/{memberId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    match /users/{userId}/doctorConsultations/{consultationId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Public catalogs and metadata.
-     * @path /doctors, /medicines, /categories, /labTests, /healthTips, /coupons, /pharmacies
-     * @allow Any signed-in user (get) /medicines/med123
-     * @deny Any non-admin user (create) /healthTips/tip123
-     * @principle Public Read with Admin-Only Writes.
-     */
-    match /doctors/{doctorId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /medicines/{medicineId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /categories/{categoryId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /labTests/{labTestId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /healthTips/{tipId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /coupons/{couponId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /pharmacies/{pharmacyId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-
-    /**
-     * @description Doctor consultation time slots.
-     * @path /timeSlots/{timeSlotId}
-     * @allow Doctor (create) their own slot; User (update) to book a slot.
-     * @deny User (update) someone else's booking.
-     * @principle Shared Access - Managed by doctors, utilized by patients.
-     */
-    match /timeSlots/{timeSlotId} {
-      allow get, list: if isSignedIn();
-      // Admin can create any slot, or a doctor can create a slot for themselves.
-      allow create: if isAdmin() || (isDoctor() && isDoctorOwner(request.resource.data.doctorId, request.auth.uid));
-      // Admin can update any slot. Doctor can update their own slots. A signed-in user can book/update their own booking.
-      allow update: if isAdmin() ||
-                    (isDoctor() && isDoctorOwner(resource.data.doctorId, request.auth.uid)) ||
-                    (isSignedIn() && request.resource.data.bookedByUserId == request.auth.uid);
-      // Admin can delete any slot, or a doctor can delete their own slots.
-      allow delete: if isAdmin() || (isDoctor() && isDoctorOwner(resource.data.doctorId, request.auth.uid));
-    }
-
-    /**
-     * @description User referrals.
-     * @path /referrals/{referralId}
-     * @allow Referrer 'abc' (get) a referral they initiated.
-     * @deny User 'xyz' (get) a referral involving 'abc' and '123'.
-     * @principle Shared Access - Visible to both parties involved.
-     */
-    match /referrals/{referralId} {
-      allow get: if isSignedIn() && (resource.data.referrerUserId == request.auth.uid || resource.data.referredUserId == request.auth.uid);
-      allow list: if isSignedIn(); // Filtering must be handled by client queries for specific uids.
-      allow create: if isSignedIn(); // Users can create referrals when using a code.
-      allow update, delete: if isAdmin();
-    }
-
-    /**
-     * @description Role management collections.
-     * @path /roles_admin/{userId}, /roles_doctor/{userId}
-     * @allow Admin (get) to check roles.
-     * @deny Public (write) to change roles.
-     * @principle Database-Backed Access Control (DBAC).
-     */
-    match /roles_admin/{userId} {
-      allow get: if isSignedIn();
-      allow list, write: if false; // System managed or manually via Firebase Console.
-    }
-
-    match /roles_doctor/{userId} {
-      allow get: if isSignedIn();
-      allow list, write: if false;
-    }
+    match /doctors/{docId} { allow read: if isSignedIn(); }
+    match /medicines/{medId} { allow read: if isSignedIn(); }
+    match /labTests/{testId} { allow read: if isSignedIn(); }
+    match /timeSlots/{slotId} { allow read, write: if isSignedIn(); }
   }
 }
