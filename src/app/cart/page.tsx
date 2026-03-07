@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import type { CartItem } from '@/lib/types';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default function CartPage() {
   const { toast } = useToast();
