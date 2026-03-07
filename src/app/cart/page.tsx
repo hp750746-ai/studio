@@ -13,6 +13,25 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default function CartPage() {
+  const [question, setQuestion] = useState("");
+const [answer, setAnswer] = useState("");
+
+const askAI = async () => {
+
+  const genAI = new GoogleGenerativeAI(
+    process.env.NEXT_PUBLIC_GEMINI_API_KEY
+  );
+
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+  });
+
+  const result = await model.generateContent(question);
+
+  const response = await result.response;
+
+  setAnswer(response.text());
+};
   const { toast } = useToast();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isClient, setIsClient] = useState(false);
