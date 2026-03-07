@@ -99,7 +99,25 @@ const askAI = async () => {
           Review your items and proceed to checkout.
         </p>
       </div>
+<section className="container mx-auto mt-10">
 
+<h2 className="text-2xl font-bold">AI Health Assistant</h2>
+
+<Input
+placeholder="Health question pucho..."
+value={question}
+onChange={(e)=>setQuestion(e.target.value)}
+/>
+
+<Button onClick={askAI} className="mt-2">
+Ask AI
+</Button>
+
+{answer && (
+<p className="mt-4">{answer}</p>
+)}
+
+</section>
       {cartItems.length === 0 ? (
         <div className="text-center bg-card p-12 rounded-lg">
             <p className="text-xl text-muted-foreground mb-4">Your cart is empty.</p>
