@@ -1,21 +1,21 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import { Upload } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MedicineCard from '@/components/app/medicine-card';
 import { medicines } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import type { Medicine } from '@/lib/types';
 
 export const metadata = {
   title: 'Online Medicine Store | HealthLinke',
   description: 'Buy medicines online from our trusted pharmacy. Tablets, syrups, ayurvedic, and more.',
 };
 
-const categories: Medicine['category'][] = ['Tablets', 'Syrup', 'Injection', 'Ayurvedic', 'Baby Care', 'Health Devices', 'Topical', 'Personal Care'];
+// TypeScript type assertion if needed
+type Medicine = typeof medicines[0];
+
+const categories: Medicine['category'][] = ['Tablets', 'Syrup', 'Injection', 'Ayurvedic', 'Baby Care', 'Health Devices'];
 const prescriptionImage = PlaceHolderImages.find(img => img.id === 'prescription-upload');
 
 export default function StorePage() {
@@ -31,18 +31,30 @@ export default function StorePage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0 mt-6">
-              <Button size="lg" variant="default" asChild>
-                <Link href="/order-medicines">
-                  <Upload className="mr-2 h-5 w-5" />
-                  Upload Prescription
-                </Link>
-              </Button>
+              
+              {/* Yahan se Upload ka naya code shuru */}
+              <label htmlFor="prescription-upload" className="cursor-pointer">
+                <Button size="lg" variant="default" asChild>
+                  <span>
+                    <Upload className="mr-2 h-5 w-5" />
+                    Upload Prescription
+                  </span>
+                </Button>
+              </label>
+              <input 
+                id="prescription-upload" 
+                type="file" 
+                accept=".jpg,.jpeg,.png,.pdf" 
+                className="hidden" 
+              />
+              {/* Yahan naya code khatam */}
+
               <p className="text-sm mt-4 text-muted-foreground">Supports JPG, PNG, and PDF formats.</p>
             </CardContent>
           </div>
           <div className="relative h-64 md:h-full w-full hidden md:block">
             {prescriptionImage && (
-              <Image 
+              <Image
                 src={prescriptionImage.imageUrl}
                 alt={prescriptionImage.description}
                 fill
