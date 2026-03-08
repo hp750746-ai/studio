@@ -7,7 +7,6 @@ import MedicineCard from '@/components/app/medicine-card';
 import { medicines } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
-
 export const metadata = {
   title: 'Online Medicine Store | HealthLinke',
   description: 'Buy medicines online from our trusted pharmacy. Tablets, syrups, ayurvedic, and more.',
@@ -31,24 +30,17 @@ export default function StorePage() {
                 Upload your prescription and we'll handle the rest. Get your medicines delivered to your doorstep.
               </CardDescription>
             </CardHeader>
-           <CardContent className="p-0 mt-6">
+            <CardContent className="p-0 mt-6">
               
-              {/* Naya CSS Trick Wala Upload Button */}
-              <div className="relative inline-block overflow-hidden">
-                <Button size="lg" variant="default" className="relative z-0 pointer-events-none">
-                  <Upload className="mr-2 h-5 w-5" />
-                  Upload Prescription
+              {/* Yahan se Upload ka naya code shuru */}
+              <label htmlFor="prescription-upload" className="cursor-pointer">
+                <Button size="lg" variant="default" asChild>
+                  <span>
+                    <Upload className="mr-2 h-5 w-5" />
+                    Upload Prescription
+                  </span>
                 </Button>
-                <input 
-                  type="file" 
-                  accept=".jpg,.jpeg,.png,.pdf" 
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                  title="Click to upload"
-                />
-              </div>
-
-              <p className="text-sm mt-4 text-muted-foreground">Supports JPG, PNG, and PDF formats.</p>
-            </CardContent>
+              </label>
               <input 
                 id="prescription-upload" 
                 type="file" 
