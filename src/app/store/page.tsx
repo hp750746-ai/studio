@@ -7,6 +7,7 @@ import MedicineCard from '@/components/app/medicine-card';
 import { medicines } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
+
 export const metadata = {
   title: 'Online Medicine Store | HealthLinke',
   description: 'Buy medicines online from our trusted pharmacy. Tablets, syrups, ayurvedic, and more.',
