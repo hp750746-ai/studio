@@ -13,7 +13,7 @@ export const doctors: Doctor[] = [
   },
   {
     id: 'doc2',
-    name: 'Dr. Priya Gupta',
+    name: 'Dr. Abhisek lama',
     specialty: 'Dermatologist',
     experience: 8,
     fees: 600,
@@ -23,7 +23,7 @@ export const doctors: Doctor[] = [
   },
   {
     id: 'doc3',
-    name: 'Dr. Ankit Verma',
+    name: 'Dr. Ankita Verma',
     specialty: 'General Physician',
     experience: 20,
     fees: 500,
